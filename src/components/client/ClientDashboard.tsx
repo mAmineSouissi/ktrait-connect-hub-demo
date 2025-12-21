@@ -1,5 +1,3 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { ClientSidebar } from "@/components/layout/ClientSidebar";
 import { KPICard } from "@/components/dashboard/KPICard";
 import {
   FolderKanban,

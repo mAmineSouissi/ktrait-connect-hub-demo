@@ -1,6 +1,3 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { ClientSidebar } from "@/components/layout/ClientSidebar";
-import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -88,12 +85,8 @@ export const ClientProjectDetail = ({ id }: ClientProjectDetailProps) => {
   const router = useRouter();
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <ClientSidebar />
-        <main className="flex-1 flex flex-col">
-          <DashboardHeader title="Détails du Projet" userName="Jean Dupont" />
-
+    <div className="min-h-screen flex w-full bg-background">
+      <main className="flex-1 flex flex-col">
           <div className="flex-1 p-6 space-y-6">
             <Button
               variant="ghost"
@@ -329,8 +322,7 @@ export const ClientProjectDetail = ({ id }: ClientProjectDetailProps) => {
               </TabsContent>
             </Tabs>
           </div>
-        </main>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };

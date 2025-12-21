@@ -1,6 +1,3 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { PartnerSidebar } from "@/components/layout/PartnerSidebar";
-import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,95 +48,86 @@ export default function PartnerProjects() {
   const router = useRouter();
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <PartnerSidebar />
-        <main className="flex-1 flex flex-col">
-          <DashboardHeader title="Mes Projets" userName="Cabinet Martin" />
-
-          <div className="flex-1 p-6 space-y-6">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {partnerProjects.map((project) => (
-                <Card
-                  key={project.id}
-                  className="hover:shadow-lg transition-shadow"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">
-                          {project.name}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          {project.client}
-                        </p>
-                      </div>
-                      <Badge
-                        variant={
-                          project.status === "En cours"
-                            ? "default"
-                            : project.status === "Terminé"
-                            ? "secondary"
-                            : "outline"
-                        }
-                      >
-                        {project.status}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Badge variant="outline">{project.role}</Badge>
-
+    <div className="min-h-screen flex w-full bg-background">
+      <main className="flex-1 flex flex-col">
+        <div className="flex-1 p-6 space-y-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {partnerProjects.map((project) => (
+              <Card
+                key={project.id}
+                className="hover:shadow-lg transition-shadow"
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
                     <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-muted-foreground">
-                          Avancement
-                        </span>
-                        <span className="font-medium">{project.progress}%</span>
-                      </div>
-                      <Progress value={project.progress} className="h-2" />
+                      <CardTitle className="text-lg">{project.name}</CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {project.client}
+                      </p>
                     </div>
+                    <Badge
+                      variant={
+                        project.status === "En cours"
+                          ? "default"
+                          : project.status === "Terminé"
+                          ? "secondary"
+                          : "outline"
+                      }
+                    >
+                      {project.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Badge variant="outline">{project.role}</Badge>
 
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>{project.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>Deadline: {project.deadline}</span>
-                      </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-muted-foreground">Avancement</span>
+                      <span className="font-medium">{project.progress}%</span>
                     </div>
+                    <Progress value={project.progress} className="h-2" />
+                  </div>
 
-                    {project.tasks > 0 && (
-                      <div className="pt-2 border-t">
-                        <p className="text-sm text-kpi-warning font-medium">
-                          {project.tasks} tâche(s) en attente
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <Button
-                        className="flex-1"
-                        onClick={() =>
-                          router.push(`/partner/projects/${project.id}`)
-                        }
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Détails
-                      </Button>
-                      <Button variant="outline">
-                        <Upload className="h-4 w-4" />
-                      </Button>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      <span>{project.location}</span>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>Deadline: {project.deadline}</span>
+                    </div>
+                  </div>
+
+                  {project.tasks > 0 && (
+                    <div className="pt-2 border-t">
+                      <p className="text-sm text-kpi-warning font-medium">
+                        {project.tasks} tâche(s) en attente
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1"
+                      onClick={() =>
+                        router.push(`/partner/projects/${project.id}`)
+                      }
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Détails
+                    </Button>
+                    <Button variant="outline">
+                      <Upload className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </main>
-      </div>
-    </SidebarProvider>
+        </div>
+      </main>
+    </div>
   );
 }
