@@ -2,6 +2,7 @@ import { AdminProjectDetail } from "@/components/admin/projects/details/AdminPro
 import { useParams } from "next/navigation";
 
 export default function Page() {
-  const { id } = useParams();
-  return <AdminProjectDetail id={id as string} />;
+  const params = useParams();
+  const id = params?.id as string;
+  return <AdminProjectDetail id={id} />;
 }

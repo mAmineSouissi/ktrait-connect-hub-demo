@@ -1,165 +1,274 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Search, Eye, MapPin, Calendar, Users } from "lucide-react";
-import { useState } from "react";
+"use client";
+
+import React from "react";
 import { useRouter } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { DataTable } from "@/components/shared/data-tables/data-table";
+import { DataTableConfig } from "@/components/shared/data-tables/types";
+import { useChantierColumns } from "./columns/useChantierColumns";
+import { useChantierStore } from "@/hooks/stores/useChantierStore";
+import { useDebounce } from "@/hooks/useDebounce";
+import { admin } from "@/api/admin";
+import type { ChantierWithCounts } from "@/types/chantier.types";
+import type {
+  CreateChantierRequest,
+  UpdateChantierRequest,
+} from "@/types/chantier.types";
+import { useChantierCreateSheet } from "./modals/ChantierCreateSheet";
+import { useChantierUpdateSheet } from "./modals/ChantierUpdateSheet";
+import { useChantierDeleteDialog } from "./modals/ChantierDeleteDialog";
 
-const mockChantiers = [
-  {
-    id: 1,
-    name: "Villa Moderne Dupont",
-    location: "Aix-en-Provence",
-    progress: 65,
-    status: "En cours",
-    team: 8,
-    startDate: "15/01/2024",
-    endDate: "15/12/2024",
-  },
-  {
-    id: 2,
-    name: "Immeuble Résidentiel Lyon",
-    location: "Lyon 6ème",
-    progress: 30,
-    status: "En cours",
-    team: 15,
-    startDate: "01/02/2024",
-    endDate: "30/11/2024",
-  },
-  {
-    id: 3,
-    name: "Rénovation Bureau Paris",
-    location: "Paris 8ème",
-    progress: 0,
-    status: "Planifié",
-    team: 0,
-    startDate: "01/04/2024",
-    endDate: "01/08/2024",
-  },
-  {
-    id: 4,
-    name: "Extension Commerce",
-    location: "Marseille",
-    progress: 100,
-    status: "Terminé",
-    team: 0,
-    startDate: "01/10/2023",
-    endDate: "15/02/2024",
-  },
-  {
-    id: 5,
-    name: "Maison Écologique",
-    location: "Bordeaux",
-    progress: 10,
-    status: "En attente",
-    team: 4,
-    startDate: "15/03/2024",
-    endDate: "15/01/2025",
-  },
-];
+interface AdminChantiersProps {
+  className?: string;
+}
 
-export default function AdminChantiers() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useRouter();
+export default function AdminChantiers({ className }: AdminChantiersProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const chantierStore = useChantierStore();
 
-  const filteredChantiers = mockChantiers.filter(
-    (chantier) =>
-      chantier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chantier.location.toLowerCase().includes(searchTerm.toLowerCase())
+  const [page, setPage] = React.useState(1);
+  const [size, setSize] = React.useState(10);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [sortDetails, setSortDetails] = React.useState<{
+    order: boolean;
+    sortKey: string;
+  }>({
+    order: true, // true = desc, false = asc
+    sortKey: "created_at",
+  });
+
+  // Debounce search and pagination
+  const { value: debouncedSearchTerm, loading: searching } = useDebounce(
+    searchTerm,
+    500
+  );
+  const { value: debouncedPage, loading: paging } = useDebounce(page, 300);
+  const { value: debouncedSize, loading: resizing } = useDebounce(size, 300);
+  const { value: debouncedSortDetails, loading: sorting } = useDebounce(
+    sortDetails,
+    300
   );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "En cours":
-        return "default";
-      case "Terminé":
-        return "secondary";
-      case "Planifié":
-        return "outline";
-      default:
-        return "destructive";
+  const offset = (debouncedPage - 1) * debouncedSize;
+
+  // Fetch projects for dropdown
+  const { data: projectsData } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => admin.projects.list({ limit: 100 }),
+  });
+
+  const projects = projectsData?.projects || [];
+
+  // Fetch chantiers
+  const {
+    data: chantiersResponse,
+    isFetching: isChantiersPending,
+    refetch: refetchChantiers,
+  } = useQuery({
+    queryKey: [
+      "chantiers",
+      debouncedPage,
+      debouncedSize,
+      debouncedSortDetails.order,
+      debouncedSortDetails.sortKey,
+      debouncedSearchTerm,
+    ],
+    queryFn: () =>
+      admin.chantiers.getChantiers({
+        search: debouncedSearchTerm || undefined,
+        limit: debouncedSize,
+        offset,
+        sortKey: debouncedSortDetails.sortKey,
+        order: debouncedSortDetails.order ? "desc" : "asc",
+      }),
+  });
+
+  const chantiers = React.useMemo(() => {
+    if (!chantiersResponse) return [];
+    return chantiersResponse.chantiers;
+  }, [chantiersResponse]);
+
+  const totalPageCount = React.useMemo(() => {
+    if (!chantiersResponse) return 0;
+    return Math.ceil((chantiersResponse.total || 0) / debouncedSize);
+  }, [chantiersResponse, debouncedSize]);
+
+  // Create chantier mutation
+  const { mutate: createChantier, isPending: isCreationPending } = useMutation({
+    mutationFn: (data: CreateChantierRequest) =>
+      admin.chantiers.createChantier(data),
+    onSuccess: () => {
+      toast.success("Chantier créé avec succès");
+      refetchChantiers();
+      chantierStore.reset();
+      closeCreateChantierSheet();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la création du chantier");
+    },
+  });
+
+  // Update chantier mutation
+  const { mutate: updateChantier, isPending: isUpdatePending } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateChantierRequest }) =>
+      admin.chantiers.updateChantier(id, data),
+    onSuccess: () => {
+      toast.success("Chantier mis à jour avec succès");
+      queryClient.invalidateQueries({ queryKey: ["chantiers"] });
+      chantierStore.reset();
+      closeUpdateChantierSheet();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la mise à jour du chantier");
+    },
+  });
+
+  // Delete chantier mutation
+  const { mutate: deleteChantier, isPending: isDeletionPending } = useMutation({
+    mutationFn: (id: string) => admin.chantiers.deleteChantier(id),
+    onSuccess: () => {
+      toast.success("Chantier supprimé avec succès");
+      queryClient.invalidateQueries({ queryKey: ["chantiers"] });
+      chantierStore.reset();
+      closeDeleteChantierDialog();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la suppression du chantier");
+    },
+  });
+
+  const handleCreateSubmit = () => {
+    const errors: Record<string, string> = {};
+    const dto = chantierStore.createDto;
+
+    if (!dto.project_id) errors.project_id = "Le projet est requis";
+    if (!dto.name) errors.name = "Le nom est requis";
+    if (!dto.location) errors.location = "La localisation est requise";
+
+    if (Object.keys(errors).length > 0) {
+      chantierStore.set("createDtoErrors", errors);
+      toast.error("Veuillez corriger les erreurs du formulaire");
+      return;
     }
+
+    createChantier(dto);
   };
 
+  const handleUpdateSubmit = () => {
+    const chantier = chantierStore.response;
+    if (!chantier) {
+      toast.error("Aucun chantier sélectionné");
+      return;
+    }
+
+    const errors: Record<string, string> = {};
+    const dto = chantierStore.updateDto;
+
+    if (dto.name !== undefined && !dto.name) {
+      errors.name = "Le nom est requis";
+    }
+    if (dto.location !== undefined && !dto.location) {
+      errors.location = "La localisation est requise";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      chantierStore.set("updateDtoErrors", errors);
+      toast.error("Veuillez corriger les erreurs du formulaire");
+      return;
+    }
+
+    updateChantier({ id: chantier.id, data: dto });
+  };
+
+  const {
+    createChantierSheet,
+    openCreateChantierSheet,
+    closeCreateChantierSheet,
+  } = useChantierCreateSheet({
+    createChantier: handleCreateSubmit,
+    isCreatePending: isCreationPending,
+    resetChantier: () => chantierStore.reset(),
+    projects,
+  });
+
+  const {
+    updateChantierSheet,
+    openUpdateChantierSheet,
+    closeUpdateChantierSheet,
+  } = useChantierUpdateSheet({
+    updateChantier: handleUpdateSubmit,
+    isUpdatePending: isUpdatePending,
+    resetChantier: () => chantierStore.reset(),
+    chantier: chantierStore.response,
+    projects,
+  });
+
+  const {
+    deleteChantierDialog,
+    openDeleteChantierDialog,
+    closeDeleteChantierDialog,
+  } = useChantierDeleteDialog({
+    chantierName: chantierStore.response?.name || "",
+    deleteChantier: () => {
+      const id = chantierStore.response?.id;
+      if (id) {
+        deleteChantier(id);
+      }
+    },
+    isDeleting: isDeletionPending,
+  });
+
+  const context: DataTableConfig<ChantierWithCounts> = {
+    singularName: "chantier",
+    pluralName: "chantiers",
+    createCallback: openCreateChantierSheet,
+    inspectCallback: (chantier: ChantierWithCounts) => {
+      router.push(`/admin/chantiers/${chantier.id}`);
+    },
+    updateCallback: (chantier: ChantierWithCounts) => {
+      chantierStore.initializeUpdateDto(chantier);
+      openUpdateChantierSheet();
+    },
+    deleteCallback: (chantier: ChantierWithCounts) => {
+      chantierStore.set("response", chantier);
+      openDeleteChantierDialog();
+    },
+    searchTerm,
+    setSearchTerm,
+    page,
+    totalPageCount,
+    setPage,
+    size,
+    setSize,
+    order: sortDetails.order,
+    sortKey: sortDetails.sortKey,
+    setSortDetails: (order: boolean, sortKey: string) =>
+      setSortDetails({ order, sortKey }),
+    targetEntity: (chantier: ChantierWithCounts) => {
+      chantierStore.set("response", chantier);
+      chantierStore.initializeUpdateDto(chantier);
+    },
+  };
+
+  const columns = useChantierColumns(context);
+
+  const isPending =
+    isChantiersPending || paging || resizing || searching || sorting;
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-6">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher un chantier..."
-              className="pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredChantiers.map((chantier) => (
-            <Card
-              key={chantier.id}
-              className="cursor-pointer transition-shadow hover:shadow-lg"
-              onClick={() => navigate.push(`/admin/chantiers/${chantier.id}`)}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{chantier.name}</CardTitle>
-                    <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                      <MapPin className="h-3 w-3" /> {chantier.location}
-                    </p>
-                  </div>
-                  <Badge variant={getStatusColor(chantier.status)}>
-                    {chantier.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <div className="mb-1 flex justify-between text-sm">
-                    <span className="text-muted-foreground">Avancement</span>
-                    <span className="font-medium">{chantier.progress}%</span>
-                  </div>
-                  <Progress value={chantier.progress} className="h-2" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-muted-foreground">Début</p>
-                      <p className="font-medium">{chantier.startDate}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-muted-foreground">Équipe</p>
-                      <p className="font-medium">{chantier.team} personnes</p>
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate.push(`/admin/chantiers/${chantier.id}`);
-                  }}
-                >
-                  <Eye className="mr-2 h-4 w-4" />
-                  Voir le chantier
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+    <div className={cn("space-y-6", className)}>
+      <DataTable<ChantierWithCounts, unknown>
+        data={chantiers}
+        columns={columns}
+        context={context}
+        isPending={isPending}
+      />
+      {createChantierSheet}
+      {updateChantierSheet}
+      {deleteChantierDialog}
     </div>
   );
 }
