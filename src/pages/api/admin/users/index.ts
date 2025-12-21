@@ -251,12 +251,12 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     // Update user profile with additional data
     const updateData: any = {
       is_active: data.is_active !== undefined ? data.is_active : true,
-      // Set approval_status: 'approved' for admins, 'pending' for others
-      approval_status: data.role === "admin" ? "approved" : "pending",
+      // New users created via this endpoint are non-admin, start as pending
+      approval_status: "pending",
     };
 
     // If admin is creating and approving immediately, set approval fields
-    if (data.role !== "admin" && adminUserId) {
+    if (adminUserId) {
       // For now, new users start as 'pending' - admin can approve later
       // If you want auto-approval, change to:
       // updateData.approval_status = "approved";
