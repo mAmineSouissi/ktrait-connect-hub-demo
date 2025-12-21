@@ -1,6 +1,6 @@
-import { User } from "./user.types";
+import type { UserRow } from "./supabase/users.types";
 
-export interface ClientDetail extends User {
+export interface ClientDetail extends UserRow {
   city?: string | null;
   address?: string | null;
   postal_code?: string | null;
@@ -56,7 +56,7 @@ export interface UpdateClientRequest {
   tax_id?: string;
 }
 
-export interface ClientListItem extends User {
+export interface ClientListItem extends UserRow {
   projects_count?: number;
   city?: string | null;
   address?: string | null;

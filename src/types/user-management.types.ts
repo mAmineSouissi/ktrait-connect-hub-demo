@@ -1,17 +1,14 @@
 import { UserRole } from "./database.types";
-import { User } from "./user.types";
+import type { UserRow } from "./supabase/users.types";
 
-export interface UserListItem extends User {
+export interface UserListItem extends UserRow {
   projects_count?: number;
   city?: string | null;
   address?: string | null;
   postal_code?: string | null;
   company_name?: string | null;
   tax_id?: string | null;
-  approval_status?: "pending" | "approved" | "rejected" | null;
-  approved_at?: string | null;
-  approved_by?: string | null;
-  rejection_reason?: string | null;
+  // Note: approval_status, approved_at, approved_by, rejection_reason are already in UserRow
 }
 
 export interface CreateUserRequest {
@@ -44,17 +41,14 @@ export interface UpdateUserRequest {
   tax_id?: string;
 }
 
-export interface UserDetail extends User {
+export interface UserDetail extends UserRow {
   city?: string | null;
   address?: string | null;
   postal_code?: string | null;
   company_name?: string | null;
   tax_id?: string | null;
   projects_count?: number;
-  approval_status?: "pending" | "approved" | "rejected" | null;
-  approved_at?: string | null;
-  approved_by?: string | null;
-  rejection_reason?: string | null;
+  // Note: approval_status, approved_at, approved_by, rejection_reason are already in UserRow
   // Related data (populated by API)
   projects?: Array<{
     id: string;
@@ -80,7 +74,7 @@ export interface UserDetail extends User {
 
 export type UserStatus = "Actif" | "En attente" | "Inactif";
 
-export function getUserStatus(user: User): UserStatus {
+export function getUserStatus(user: UserRow | UserListItem): UserStatus {
   if (!user.is_active) return "Inactif";
   if (!user.email_verified) return "En attente";
   return "Actif";

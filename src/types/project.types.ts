@@ -1,22 +1,17 @@
-import { ProjectStatus, StageStatus } from "./database.types";
+/**
+ * Project types
+ *
+ * These extend database schema types (from types/supabase/) with application-specific fields.
+ */
+
+import type { ProjectRow } from "./supabase/projects.types";
+import type { ProjectPhaseRow } from "./supabase/projects.types";
+import type { ProjectPartnerRow } from "./supabase/projects.types";
 
 /**
- * Project type matching the public.projects table schema
+ * Project type - extends ProjectRow with optional client info (populated by API)
  */
-export interface Project {
-  id: string;
-  client_id: string;
-  name: string;
-  description?: string | null;
-  status: ProjectStatus;
-  progress: number; // 0-100
-  estimated_budget?: number | null;
-  spent_amount?: number | null;
-  start_date?: string | null;
-  end_date?: string | null;
-  address?: string | null;
-  created_at: string;
-  updated_at: string;
+export interface Project extends ProjectRow {
   // Client info (populated by API)
   client?: {
     id: string;
@@ -29,40 +24,21 @@ export interface Project {
 }
 
 /**
- * Project Phase type matching the public.project_phases table schema
+ * Project Phase - alias for ProjectPhaseRow
  */
-export interface ProjectPhase {
-  id: string;
-  project_id: string;
-  name: string;
-  description?: string | null;
-  status: StageStatus;
-  progress_percentage: number; // 0-100
-  order_index: number;
-  started_at?: string | null;
-  completed_at?: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type { ProjectPhaseRow as ProjectPhase } from "./supabase/projects.types";
 
 /**
- * Project Partner relationship
+ * Project Partner - alias for ProjectPartnerRow
  */
-export interface ProjectPartner {
-  id: string;
-  project_id: string;
-  partner_id: string;
-  role?: string | null;
-  is_primary: boolean;
-  created_at: string;
-}
+export type { ProjectPartnerRow as ProjectPartner } from "./supabase/projects.types";
 
 /**
  * Project with related data
  */
 export interface ProjectWithDetails extends Project {
-  phases?: ProjectPhase[];
-  partners?: ProjectPartner[];
+  phases?: ProjectPhaseRow[];
+  partners?: ProjectPartnerRow[];
   documents_count?: number;
   expenses_total?: number;
   payments_total?: number;

@@ -1,34 +1,19 @@
-import { UserRole } from "./database.types";
+/**
+ * User and Client types
+ *
+ * These are re-exports/aliases of database schema types for convenience.
+ * The actual database types are in types/supabase/
+ */
 
-export interface User {
-  id: string;
-  email: string;
-  full_name: string;
-  phone?: string | null;
-  avatar_url?: string | null;
-  is_active: boolean;
-  email_verified: boolean;
-  role: UserRole;
-  approval_status?: "pending" | "approved" | "rejected" | null;
-  approved_at?: string | null;
-  approved_by?: string | null;
-  rejection_reason?: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// Re-export UserRow as User for backward compatibility
+export type { UserRow as User } from "./supabase/users.types";
 
-export interface Client {
-  id: string;
-  user_id: string;
-  address?: string | null;
-  city?: string | null;
-  postal_code?: string | null;
-  company_name?: string | null;
-  tax_id?: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// Re-export ClientRow as Client for backward compatibility
+export type { ClientRow as Client } from "./supabase/clients.types";
 
-export interface UserWithClient extends User {
-  client?: Client;
+import type { UserRow } from "./supabase/users.types";
+import type { ClientRow } from "./supabase/clients.types";
+
+export interface UserWithClient extends UserRow {
+  client?: ClientRow;
 }
