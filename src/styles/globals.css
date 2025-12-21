@@ -1,26 +1,231 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+/* ---break---
+*/
+@custom-variant dark (&:is(.dark *));
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* KTRAIT Construction Design System - Palette marron/beige/gris professionnelle */
+    --background: 38 25% 96%;
+    --foreground: 30 10% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 30 10% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 10% 12%;
+
+    /* Primary: Marron chaud construction */
+    --primary: 30 28% 41%;
+    --primary-foreground: 38 35% 95%;
+
+    /* Secondary: Beige élégant */
+    --secondary: 38 25% 83%;
+    --secondary-foreground: 30 10% 12%;
+
+    /* Muted: Gris neutre */
+    --muted: 220 13% 91%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent: Beige clair highlights */
+    --accent: 38 35% 88%;
+    --accent-foreground: 30 10% 12%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 13% 88%;
+    --input: 220 13% 91%;
+    --ring: 30 28% 41%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar construction theme */
+    --sidebar-background: 30 10% 12%;
+    --sidebar-foreground: 38 25% 96%;
+    --sidebar-primary: 30 28% 41%;
+    --sidebar-primary-foreground: 38 35% 95%;
+    --sidebar-accent: 30 15% 20%;
+    --sidebar-accent-foreground: 38 25% 96%;
+    --sidebar-border: 30 15% 20%;
+    --sidebar-ring: 30 28% 41%;
+
+    /* KPIs & Stats colors */
+    --kpi-success: 142 71% 45%;
+    --kpi-warning: 38 92% 50%;
+    --kpi-info: 199 89% 48%;
+    --kpi-neutral: 220 9% 46%;
+
+    /* Gradients */
+    --gradient-warm: linear-gradient(135deg, hsl(30 28% 41%) 0%, hsl(30 28% 51%) 100%);
+    --gradient-light: linear-gradient(180deg, hsl(38 25% 96%) 0%, hsl(220 13% 95%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(30 10% 12% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(30 10% 12% / 0.1), 0 2px 4px -1px hsl(30 10% 12% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(30 10% 12% / 0.1), 0 4px 6px -2px hsl(30 10% 12% / 0.05);
+  }
+
+  .dark {
+    --background: 30 10% 12%;
+    --foreground: 38 25% 96%;
+
+    --card: 30 15% 15%;
+    --card-foreground: 38 25% 96%;
+
+    --popover: 30 15% 15%;
+    --popover-foreground: 38 25% 96%;
+
+    --primary: 30 28% 51%;
+    --primary-foreground: 30 10% 12%;
+
+    --secondary: 30 15% 20%;
+    --secondary-foreground: 38 25% 96%;
+
+    --muted: 30 15% 20%;
+    --muted-foreground: 220 13% 65%;
+
+    --accent: 30 20% 25%;
+    --accent-foreground: 38 25% 96%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 30 15% 20%;
+    --input: 30 15% 20%;
+    --ring: 30 28% 51%;
+
+    --sidebar-background: 30 10% 8%;
+    --sidebar-foreground: 38 25% 96%;
+    --sidebar-primary: 30 28% 51%;
+    --sidebar-primary-foreground: 30 10% 12%;
+    --sidebar-accent: 30 15% 15%;
+    --sidebar-accent-foreground: 38 25% 96%;
+    --sidebar-border: 30 15% 15%;
+    --sidebar-ring: 30 28% 51%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-sidebar-background: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ---break---
+*/
+
+:root {
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: hsl(240 5.9% 10%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+/* ---break---
+*/
+
+.dark {
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+/* ---break---
+*/
+
+@theme inline {
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  /* ---break---
+*/
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  /* ---break---
+*/
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+/* ---break---
+*/
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
