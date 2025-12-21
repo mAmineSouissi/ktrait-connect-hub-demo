@@ -37,26 +37,24 @@ export const useProjectDeleteDialog = ({
         <p className="text-sm text-muted-foreground mt-2">
           Cette action est irréversible.
         </p>
-      </div>
-    ),
-    footer: (
-      <div className="flex justify-end gap-2">
-        <Button
-          variant="outline"
-          onClick={() => closeDeleteProjectDialog()}
-          disabled={isDeleting}
-        >
-          Annuler
-        </Button>
-        <Button
-          variant="destructive"
-          onClick={() => {
-            deleteProject?.();
-          }}
-          disabled={isDeleting}
-        >
-          {isDeleting ? "Suppression..." : "Supprimer"}
-        </Button>
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => closeDeleteProjectDialog()}
+            disabled={isDeleting}
+          >
+            Annuler
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              deleteProject?.();
+            }}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Suppression..." : "Supprimer"}
+          </Button>
+        </div>
       </div>
     ),
   });

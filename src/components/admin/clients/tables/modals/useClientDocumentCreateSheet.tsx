@@ -45,10 +45,8 @@ export const useClientDocumentCreateSheet = ({
       />
     ),
     className: "min-w-[50vw] flex flex-col flex-1 overflow-hidden",
-    onToggle: (isOpen: boolean) => {
-      if (!isOpen) {
-        resetDocument?.();
-      }
+    onToggle: () => {
+      resetDocument?.();
     },
   });
 

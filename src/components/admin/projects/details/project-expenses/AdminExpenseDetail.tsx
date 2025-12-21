@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   Calendar,
   Loader2,
-  DollarSign,
   FileText,
   Building2,
   Receipt,
@@ -20,6 +19,7 @@ import { formatAmount } from "@/lib/currency.util";
 import type { Expense } from "@/types/expense.types";
 
 interface AdminExpenseDetailProps {
+  projectId?: string;
   expenseId: string;
 }
 
@@ -35,7 +35,7 @@ const categoryMap: Record<string, string> = {
   autres: "Autres",
 };
 
-export const AdminExpenseDetail = ({ expenseId }: AdminExpenseDetailProps) => {
+export const AdminExpenseDetail = ({ projectId, expenseId }: AdminExpenseDetailProps) => {
   const router = useRouter();
 
   const {
@@ -58,8 +58,8 @@ export const AdminExpenseDetail = ({ expenseId }: AdminExpenseDetailProps) => {
         <Button
           variant="ghost"
           onClick={() => {
-            if (expenseData?.expense?.project_id) {
-              router.push(`/admin/projects/${expenseData.expense.project_id}`);
+            if (projectId) {
+              router.push(`/admin/projects/${projectId}`);
             } else {
               router.push("/admin/projects");
             }

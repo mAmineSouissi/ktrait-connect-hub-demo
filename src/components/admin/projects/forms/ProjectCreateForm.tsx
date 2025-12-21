@@ -126,7 +126,7 @@ export const ProjectCreateForm: React.FC<ProjectCreateFormProps> = ({
           <SelectContent>
             {clients.map((client) => (
               <SelectItem key={client.id} value={client.id}>
-                {client.name} ({client.email})
+                {client.full_name} ({client.email})
               </SelectItem>
             ))}
           </SelectContent>
