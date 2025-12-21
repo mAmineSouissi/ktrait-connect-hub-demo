@@ -1,7 +1,5 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";  
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
