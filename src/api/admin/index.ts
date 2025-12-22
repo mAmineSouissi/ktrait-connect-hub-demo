@@ -8,6 +8,8 @@ import { gallery } from "./gallery";
 import { projectPartners } from "./project-partners";
 import { partners } from "./partners";
 import { clients } from "./clients";
+import { invoices } from "./invoices";
+import { invoiceTemplates } from "./invoice-templates";
 import * as chantiersModule from "./chantiers";
 
 // Export chantiers as an object with all functions
@@ -51,4 +53,6 @@ export const admin = {
   projectPartners,
   partners,
   chantiers,
+  invoices,
+  invoiceTemplates,
 };

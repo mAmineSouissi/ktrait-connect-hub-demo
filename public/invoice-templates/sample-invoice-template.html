@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facture - INVOICE_NUMBER</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+            background: #fff;
+            padding: 20px;
+        }
+        
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2563eb;
+        }
+        
+        .company-info {
+            flex: 1;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        
+        .company-details {
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        .invoice-info {
+            text-align: right;
+        }
+        
+        .invoice-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        
+        .invoice-number {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .invoice-date {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .client-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .client-details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .client-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .client-info {
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .items-table thead {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .items-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .items-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+        
+        .totals-table {
+            width: 300px;
+        }
+        
+        .totals-table tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .totals-table td {
+            padding: 8px 12px;
+        }
+        
+        .totals-table td:first-child {
+            text-align: right;
+            color: #666;
+        }
+        
+        .totals-table td:last-child {
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .total-row {
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .total-row td {
+            padding: 15px 12px;
+            font-weight: bold;
+        }
+        
+        .notes-section {
+            margin-bottom: 30px;
+        }
+        
+        .notes-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .terms-section {
+            margin-bottom: 30px;
+        }
+        
+        .terms-box {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            color: #666;
+            font-size: 11px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .invoice-container {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-info">
+                <div class="company-name">KTRAIT Engineering</div>
+                <div class="company-details">
+                    123 Avenue des Ingénieurs<br>
+                    75008 Paris, France<br>
+                    Tél: 01 23 45 67 89<br>
+                    Email: contact@ktrait.com<br>
+                    SIRET: 123 456 789 00012
+                </div>
+            </div>
+            <div class="invoice-info">
+                <div class="invoice-title">FACTURE</div>
+                <div class="invoice-number">N° INVOICE_NUMBER</div>
+                <div class="invoice-date">Date: ISSUE_DATE</div>
+                <div class="invoice-date">Échéance: DUE_DATE</div>
+            </div>
+        </div>
+        
+        <!-- Client Section -->
+        <div class="client-section">
+            <div class="section-title">Facturer à</div>
+            <div class="client-details">
+                <div class="client-name">CLIENT_NAME</div>
+                <div class="client-info">
+                    CLIENT_COMPANY_NAME<br>
+                    CLIENT_ADDRESS<br>
+                    CLIENT_CITY CLIENT_POSTAL_CODE<br>
+                    Email: CLIENT_EMAIL<br>
+                    Tél: CLIENT_PHONE<br>
+                    SIRET: CLIENT_TAX_ID
+                </div>
+            </div>
+        </div>
+        
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="text-center">Qté</th>
+                    <th class="text-center">Unité</th>
+                    <th class="text-right">Prix unitaire</th>
+                    <th class="text-right">Total HT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ITEM_DESCRIPTION_1</td>
+                    <td class="text-center">ITEM_QUANTITY_1</td>
+                    <td class="text-center">ITEM_UNIT_1</td>
+                    <td class="text-right">ITEM_UNIT_PRICE_1 €</td>
+                    <td class="text-right">ITEM_LINE_TOTAL_1 €</td>
+                </tr>
+                <tr>
+                    <td>ITEM_DESCRIPTION_2</td>
+                    <td class="text-center">ITEM_QUANTITY_2</td>
+                    <td class="text-center">ITEM_UNIT_2</td>
+                    <td class="text-right">ITEM_UNIT_PRICE_2 €</td>
+                    <td class="text-right">ITEM_LINE_TOTAL_2 €</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Totals -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td>Sous-total HT:</td>
+                    <td>SUBTOTAL €</td>
+                </tr>
+                <tr>
+                    <td>TVA (TAX_RATE%):</td>
+                    <td>TAX_AMOUNT €</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total TTC:</td>
+                    <td>TOTAL_AMOUNT €</td>
+                </tr>
+            </table>
+        </div>
+        
+        <!-- Notes -->
+        <div class="notes-section">
+            <div class="section-title">Notes</div>
+            <div class="notes-box">
+                NOTES_CONTENT
+            </div>
+        </div>
+        
+        <!-- Terms -->
+        <div class="terms-section">
+            <div class="section-title">Conditions de paiement</div>
+            <div class="terms-box">
+                TERMS_CONTENT
+            </div>
+        </div>
+        
+        <!-- Reference -->
+        <div class="notes-section">
+            <div class="section-title">Référence</div>
+            <div class="notes-box">
+                REFERENCE_CONTENT
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>Merci de votre confiance !</p>
+            <p>KTRAIT Engineering - 123 Avenue des Ingénieurs - 75008 Paris</p>
+        </div>
+    </div>
+</body>
+</html>

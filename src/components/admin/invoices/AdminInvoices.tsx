@@ -1,396 +1,396 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";  
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+"use client";
+
+import React from "react";
+import { useRouter } from "next/navigation";
+import { api } from "@/api";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { DataTable } from "@/components/shared/data-tables/data-table";
+import { DataTableConfig } from "@/components/shared/data-tables/types";
+import { useInvoiceColumns } from "./columns/useInvoiceColumns";
+import { useInvoiceCreateSheet } from "./modals/InvoiceCreateSheet";
+import { useInvoiceUpdateSheet } from "./modals/InvoiceUpdateSheet";
+import { useInvoiceDeleteDialog } from "./modals/useInvoiceDeleteDialog";
+import { useInvoiceStore } from "@/hooks/stores/useInvoiceStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Plus,
-  Search,
-  Eye,
-  FileText,
-  Send,
-  CheckCircle,
-  XCircle,
-  Download,
-} from "lucide-react";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Plus, FileText } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import type { Invoice } from "@/types/invoice.types";
+import type {
+  CreateInvoiceRequest,
+  UpdateInvoiceRequest,
+} from "@/types/invoice.types";
 
-const mockDevis = [
-  {
-    id: "DEV-2024-001",
-    client: "Jean Dupont",
-    project: "Villa Moderne",
-    amount: "450 000 €",
-    date: "15/01/2024",
-    status: "Validé",
-  },
-  {
-    id: "DEV-2024-002",
-    client: "SCI Lyon Invest",
-    project: "Immeuble Lyon",
-    amount: "2 500 000 €",
-    date: "01/02/2024",
-    status: "En attente",
-  },
-  {
-    id: "DEV-2024-003",
-    client: "Entreprise ABC",
-    project: "Rénovation Bureau",
-    amount: "180 000 €",
-    date: "15/02/2024",
-    status: "En attente",
-  },
-  {
-    id: "DEV-2024-004",
-    client: "Marie Martin",
-    project: "Extension Commerce",
-    amount: "95 000 €",
-    date: "01/09/2023",
-    status: "Refusé",
-  },
-];
+interface AdminInvoicesProps {
+  className?: string;
+}
 
-const mockFactures = [
-  {
-    id: "FAC-2024-001",
-    client: "Jean Dupont",
-    project: "Villa Moderne",
-    amount: "45 000 €",
-    date: "15/02/2024",
-    status: "Payée",
-    dueDate: "15/03/2024",
-  },
-  {
-    id: "FAC-2024-002",
-    client: "Jean Dupont",
-    project: "Villa Moderne",
-    amount: "90 000 €",
-    date: "15/03/2024",
-    status: "Payée",
-    dueDate: "15/04/2024",
-  },
-  {
-    id: "FAC-2024-003",
-    client: "Jean Dupont",
-    project: "Villa Moderne",
-    amount: "90 000 €",
-    date: "15/04/2024",
-    status: "En attente",
-    dueDate: "15/05/2024",
-  },
-  {
-    id: "FAC-2024-004",
-    client: "SCI Lyon Invest",
-    project: "Immeuble Lyon",
-    amount: "250 000 €",
-    date: "01/03/2024",
-    status: "En retard",
-    dueDate: "01/04/2024",
-  },
-];
+export default function AdminInvoices({ className }: AdminInvoicesProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const invoiceStore = useInvoiceStore();
+  const [activeTab, setActiveTab] = React.useState<"devis" | "factures">(
+    "devis"
+  );
 
-export default function AdminInvoices() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isAddDevisOpen, setIsAddDevisOpen] = useState(false);
+  const [page, setPage] = React.useState(1);
+  const { value: debouncedPage } = useDebounce<number>(page, 500);
+
+  const [size, setSize] = React.useState(10);
+  const { value: debouncedSize } = useDebounce<number>(size, 500);
+
+  const [sortDetails, setSortDetails] = React.useState({
+    order: true, // true = desc, false = asc
+    sortKey: "created_at",
+  });
+  const { value: debouncedSortDetails } = useDebounce<typeof sortDetails>(
+    sortDetails,
+    500
+  );
+
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const { value: debouncedSearchTerm } = useDebounce<string>(searchTerm, 500);
+
+  const offset = (debouncedPage - 1) * debouncedSize;
+
+  // Fetch invoices
+  const {
+    data: invoicesResponse,
+    isFetching: isInvoicesPending,
+    refetch: refetchInvoices,
+  } = useQuery({
+    queryKey: [
+      "invoices",
+      activeTab,
+      debouncedPage,
+      debouncedSize,
+      debouncedSortDetails.order,
+      debouncedSortDetails.sortKey,
+      debouncedSearchTerm,
+    ],
+    queryFn: () =>
+      api.admin.invoices.list({
+        type: activeTab === "devis" ? "devis" : "facture",
+        search: debouncedSearchTerm || undefined,
+        limit: debouncedSize,
+        offset,
+        sortKey: debouncedSortDetails.sortKey,
+        order: debouncedSortDetails.order ? "desc" : "asc",
+      }),
+  });
+
+  const invoices = React.useMemo(() => {
+    if (!invoicesResponse) return [];
+    return invoicesResponse.invoices;
+  }, [invoicesResponse]);
+
+  const totalPageCount = React.useMemo(() => {
+    if (!invoicesResponse) return 0;
+    return Math.ceil((invoicesResponse.total || 0) / debouncedSize);
+  }, [invoicesResponse, debouncedSize]);
+
+  // Fetch clients and projects for forms
+  const { data: clientsResponse } = useQuery({
+    queryKey: ["clients", "for-invoices"],
+    queryFn: () => api.admin.clients.list({ limit: 1000 }),
+  });
+
+  const { data: projectsResponse } = useQuery({
+    queryKey: ["projects", "for-invoices"],
+    queryFn: () => api.admin.projects.list({ limit: 1000 }),
+  });
+
+  // Fetch templates
+  const { data: templatesResponse } = useQuery({
+    queryKey: ["invoice-templates", activeTab],
+    queryFn: () =>
+      api.admin.invoiceTemplates.list({
+        type: activeTab === "devis" ? "devis" : "facture",
+        is_active: true,
+      }),
+  });
+
+  const clients = React.useMemo(() => {
+    return clientsResponse?.clients || [];
+  }, [clientsResponse]);
+
+  const projects = React.useMemo(() => {
+    return projectsResponse?.projects || [];
+  }, [projectsResponse]);
+
+  const templates = React.useMemo(() => {
+    return templatesResponse?.templates || [];
+  }, [templatesResponse]);
+
+  // Create invoice mutation
+  const { mutate: createInvoice, isPending: isCreationPending } = useMutation({
+    mutationFn: (data: CreateInvoiceRequest) => api.admin.invoices.create(data),
+    onSuccess: () => {
+      toast.success("Facture créée avec succès");
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      invoiceStore.reset();
+      closeCreateInvoiceSheet();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erreur lors de la création de la facture");
+    },
+  });
+
+  // Update invoice mutation
+  const { mutate: updateInvoice, isPending: isUpdatePending } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateInvoiceRequest }) =>
+      api.admin.invoices.update({ id, data }),
+    onSuccess: () => {
+      toast.success("Facture mise à jour avec succès");
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      invoiceStore.reset();
+      closeUpdateInvoiceSheet();
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.message || "Erreur lors de la mise à jour de la facture"
+      );
+    },
+  });
+
+  // Delete invoice mutation
+  const { mutate: deleteInvoice, isPending: isDeletionPending } = useMutation({
+    mutationFn: (id: string) => api.admin.invoices.delete(id, true),
+    onSuccess: () => {
+      toast.success("Facture supprimée définitivement avec succès");
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      closeDeleteInvoiceDialog();
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.message || "Erreur lors de la suppression de la facture"
+      );
+    },
+  });
+
+  // Calculate totals for KPI cards
+  const totals = React.useMemo(() => {
+    const allInvoices = invoicesResponse?.invoices || [];
+    const devisTotal = allInvoices
+      .filter((i) => i.type === "devis")
+      .reduce((sum, i) => sum + i.total_amount, 0);
+    const facturesPaid = allInvoices
+      .filter((i) => i.type === "facture" && i.status === "paid")
+      .reduce((sum, i) => sum + i.total_amount, 0);
+    const facturesPending = allInvoices
+      .filter((i) => i.type === "facture" && i.status === "sent")
+      .reduce((sum, i) => sum + i.total_amount, 0);
+    const facturesOverdue = allInvoices
+      .filter((i) => i.type === "facture" && i.status === "overdue")
+      .reduce((sum, i) => sum + i.total_amount, 0);
+
+    return {
+      devisTotal,
+      facturesPaid,
+      facturesPending,
+      facturesOverdue,
+    };
+  }, [invoicesResponse]);
+
+  const handleCreateSubmit = (data: CreateInvoiceRequest) => {
+    createInvoice(data);
+  };
+
+  const handleUpdateSubmit = (data: UpdateInvoiceRequest) => {
+    const invoice = invoiceStore.response;
+    if (!invoice) {
+      toast.error("Aucune facture sélectionnée");
+      return;
+    }
+
+    updateInvoice({ id: invoice.id, data });
+  };
+
+  const handleOpenEdit = async (invoice: Invoice) => {
+    try {
+      const { invoice: invoiceDetail } = await api.admin.invoices.getById(
+        invoice.id
+      );
+      invoiceStore.set("response", invoiceDetail);
+      invoiceStore.initializeUpdateDto(invoiceDetail);
+      openUpdateInvoiceSheet();
+    } catch (error: any) {
+      console.error("Error fetching invoice details:", error);
+      toast.error("Erreur lors du chargement des détails de la facture");
+    }
+  };
+
+  const handleDelete = (invoice: Invoice) => {
+    invoiceStore.set("response", invoice as any);
+    openDeleteInvoiceDialog();
+  };
+
+  const {
+    createInvoiceSheet,
+    openCreateInvoiceSheet,
+    closeCreateInvoiceSheet,
+  } = useInvoiceCreateSheet({
+    createInvoice: (data) => {
+      handleCreateSubmit(data);
+    },
+    isCreatePending: isCreationPending,
+    resetInvoice: () => invoiceStore.reset(),
+    clients,
+    projects,
+    templates,
+    defaultType: activeTab === "devis" ? "devis" : "facture",
+  });
+
+  const {
+    updateInvoiceSheet,
+    openUpdateInvoiceSheet,
+    closeUpdateInvoiceSheet,
+  } = useInvoiceUpdateSheet({
+    updateInvoice: (data) => {
+      handleUpdateSubmit(data);
+    },
+    isUpdatePending: isUpdatePending,
+    resetInvoice: () => invoiceStore.reset(),
+    invoice: invoiceStore.response,
+    clients,
+    projects,
+    templates,
+  });
+
+  const {
+    deleteInvoiceDialog,
+    openDeleteInvoiceDialog,
+    closeDeleteInvoiceDialog,
+  } = useInvoiceDeleteDialog({
+    deleteInvoice: (id: string) => deleteInvoice(id),
+    isDeleting: isDeletionPending,
+    invoice: invoiceStore.response as any,
+  });
+
+  // Data table context
+  const context: DataTableConfig<Invoice> = {
+    singularName: activeTab === "devis" ? "devis" : "facture",
+    pluralName: activeTab === "devis" ? "devis" : "factures",
+    page: debouncedPage,
+    size: debouncedSize,
+    totalPageCount,
+    setPage,
+    setSize,
+    order: debouncedSortDetails.order,
+    sortKey: debouncedSortDetails.sortKey,
+    setSortDetails: (order, sortKey) => setSortDetails({ order, sortKey }),
+    searchTerm: debouncedSearchTerm,
+    setSearchTerm,
+    targetEntity: (entity) => {
+      invoiceStore.set("response", entity as any);
+    },
+    inspectCallback: (entity) => {
+      router.push(`/admin/invoices/${entity.id}`);
+    },
+    updateCallback: handleOpenEdit,
+    deleteCallback: handleDelete,
+  };
+
+  const columns = useInvoiceColumns(context);
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
-      <main className="flex-1 flex flex-col">
-
-        <div className="flex-1 p-6 space-y-6">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">3 225 000 €</p>
-                  <p className="text-sm text-muted-foreground">Total Devis</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-kpi-success">
-                    475 000 €
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Factures Payées
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-kpi-warning">
-                    90 000 €
-                  </p>
-                  <p className="text-sm text-muted-foreground">En attente</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-kpi-danger">
-                    250 000 €
-                  </p>
-                  <p className="text-sm text-muted-foreground">En retard</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Tabs defaultValue="devis" className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <TabsList>
-                <TabsTrigger value="devis">Devis</TabsTrigger>
-                <TabsTrigger value="factures">Factures</TabsTrigger>
-              </TabsList>
-
-              <div className="flex gap-2">
-                <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Rechercher..."
-                    className="pl-10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-
-                <Dialog open={isAddDevisOpen} onOpenChange={setIsAddDevisOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nouveau devis
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>Créer un devis</DialogTitle>
-                    </DialogHeader>
-                    <form className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Client</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un client" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">Jean Dupont</SelectItem>
-                            <SelectItem value="2">Marie Martin</SelectItem>
-                            <SelectItem value="3">SCI Lyon Invest</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Projet</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un projet" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">Villa Moderne</SelectItem>
-                            <SelectItem value="2">Immeuble Lyon</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Montant HT</Label>
-                        <Input placeholder="Ex: 100 000 €" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Description</Label>
-                        <Input placeholder="Description du devis" />
-                      </div>
-                      <div className="flex justify-end gap-2 pt-4">
-                        <Button
-                          variant="outline"
-                          type="button"
-                          onClick={() => setIsAddDevisOpen(false)}
-                        >
-                          Annuler
-                        </Button>
-                        <Button type="submit">Créer le devis</Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
+    <div className={cn("space-y-6", className)}>
+      {/* KPI Cards */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">
+                {new Intl.NumberFormat("fr-FR", {
+                  style: "currency",
+                  currency: "EUR",
+                  maximumFractionDigits: 0,
+                }).format(totals.devisTotal)}
+              </p>
+              <p className="text-sm text-muted-foreground">Total Devis</p>
             </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-kpi-success">
+                {new Intl.NumberFormat("fr-FR", {
+                  style: "currency",
+                  currency: "EUR",
+                  maximumFractionDigits: 0,
+                }).format(totals.facturesPaid)}
+              </p>
+              <p className="text-sm text-muted-foreground">Factures Payées</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-kpi-warning">
+                {new Intl.NumberFormat("fr-FR", {
+                  style: "currency",
+                  currency: "EUR",
+                  maximumFractionDigits: 0,
+                }).format(totals.facturesPending)}
+              </p>
+              <p className="text-sm text-muted-foreground">En attente</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-kpi-danger">
+                {new Intl.NumberFormat("fr-FR", {
+                  style: "currency",
+                  currency: "EUR",
+                  maximumFractionDigits: 0,
+                }).format(totals.facturesOverdue)}
+              </p>
+              <p className="text-sm text-muted-foreground">En retard</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            <TabsContent value="devis">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Liste des Devis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>N° Devis</TableHead>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Projet</TableHead>
-                        <TableHead>Montant</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockDevis.map((devis) => (
-                        <TableRow key={devis.id}>
-                          <TableCell className="font-medium">
-                            {devis.id}
-                          </TableCell>
-                          <TableCell>{devis.client}</TableCell>
-                          <TableCell>{devis.project}</TableCell>
-                          <TableCell>{devis.amount}</TableCell>
-                          <TableCell>{devis.date}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                devis.status === "Validé"
-                                  ? "default"
-                                  : devis.status === "En attente"
-                                  ? "secondary"
-                                  : "destructive"
-                              }
-                            >
-                              {devis.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button variant="ghost" size="icon">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon">
-                                <Send className="h-4 w-4" />
-                              </Button>
-                              {devis.status === "En attente" && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-kpi-success"
-                                  >
-                                    <CheckCircle className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-destructive"
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                  </Button>
-                                </>
-                              )}
-                              {devis.status === "Validé" && (
-                                <Button variant="ghost" size="icon">
-                                  <FileText className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
+      {/* Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as "devis" | "factures")}
+        className="w-full"
+      >
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <TabsList>
+            <TabsTrigger value="devis">Devis</TabsTrigger>
+            <TabsTrigger value="factures">Factures</TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="factures">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Liste des Factures</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>N° Facture</TableHead>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Projet</TableHead>
-                        <TableHead>Montant</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Échéance</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockFactures.map((facture) => (
-                        <TableRow key={facture.id}>
-                          <TableCell className="font-medium">
-                            {facture.id}
-                          </TableCell>
-                          <TableCell>{facture.client}</TableCell>
-                          <TableCell>{facture.project}</TableCell>
-                          <TableCell>{facture.amount}</TableCell>
-                          <TableCell>{facture.date}</TableCell>
-                          <TableCell>{facture.dueDate}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                facture.status === "Payée"
-                                  ? "default"
-                                  : facture.status === "En attente"
-                                  ? "secondary"
-                                  : "destructive"
-                              }
-                            >
-                              {facture.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button variant="ghost" size="icon">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon">
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon">
-                                <Send className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          <Button onClick={openCreateInvoiceSheet}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nouveau {activeTab === "devis" ? "devis" : "facture"}
+          </Button>
         </div>
-      </main>
+
+        <TabsContent value={activeTab}>
+          <DataTable<Invoice, unknown>
+            data={invoices}
+            columns={columns}
+            context={context}
+            isPending={isInvoicesPending}
+            footerPagination={true}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Modals */}
+      {createInvoiceSheet}
+      {updateInvoiceSheet}
+      {deleteInvoiceDialog}
     </div>
   );
 }

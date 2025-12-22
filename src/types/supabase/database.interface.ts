@@ -71,6 +71,19 @@ import type {
   ChantierNoteInsert,
   ChantierNoteUpdate,
 } from "./chantiers.types";
+import type {
+  InvoiceRow,
+  InvoiceInsert,
+  InvoiceUpdate,
+  InvoiceItemRow,
+  InvoiceItemInsert,
+  InvoiceItemUpdate,
+} from "./invoices.types";
+import type {
+  InvoiceTemplateRow,
+  InvoiceTemplateInsert,
+  InvoiceTemplateUpdate,
+} from "./invoice-templates.types";
 
 /**
  * Database table row types
@@ -172,6 +185,21 @@ export interface Database {
         Row: ChantierNoteRow;
         Insert: ChantierNoteInsert;
         Update: ChantierNoteUpdate;
+      };
+      invoices: {
+        Row: InvoiceRow;
+        Insert: InvoiceInsert;
+        Update: InvoiceUpdate;
+      };
+      invoice_items: {
+        Row: InvoiceItemRow;
+        Insert: InvoiceItemInsert;
+        Update: InvoiceItemUpdate;
+      };
+      invoice_templates: {
+        Row: InvoiceTemplateRow;
+        Insert: InvoiceTemplateInsert;
+        Update: InvoiceTemplateUpdate;
       };
     };
   };

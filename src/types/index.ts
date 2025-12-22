@@ -23,6 +23,8 @@ export * from "./document.types";
 export * from "./payment.types";
 export * from "./expense.types";
 export * from "./gallery.types";
+export * from "./invoice.types";
+export * from "./invoice-template.types";
 
 // Enums
 export * from "./enums";
