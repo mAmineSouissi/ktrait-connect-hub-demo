@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Home, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";

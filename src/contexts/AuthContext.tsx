@@ -7,7 +7,7 @@ import {
   SignUpFormData,
   SignInResult,
 } from "@/types/auth.types";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { api } from "@/api";
 
 export const AuthContext = React.createContext<AuthContextType>({
