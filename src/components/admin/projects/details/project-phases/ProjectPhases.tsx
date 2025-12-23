@@ -146,7 +146,7 @@ export const ProjectPhases = ({ projectId }: ProjectPhasesProps) => {
   return (
     <React.Fragment>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle>Phases</CardTitle>
           <Button onClick={openCreatePhaseSheet} size="sm">
             <Plus className="h-4 w-4 mr-2" />

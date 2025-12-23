@@ -60,14 +60,14 @@ function AppContent({
   return (
     <div
       className={cn(
-        `flex flex-col flex-1 overflow-hidden min-h-screen max-h-screen`,
+        `flex flex-col min-h-screen w-full`,
         className
       )}
     >
       {isAuthPage || !isAuthenticated ? (
         <Component {...pageProps} />
       ) : (
-        <Layout className="flex w-full">
+        <Layout className="flex w-full h-screen">
           <Component {...pageProps} />
         </Layout>
       )}

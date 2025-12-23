@@ -46,7 +46,7 @@ export const Layout = ({ children, className }: LayoutProps) => {
   };
 
   return (
-    <div className={cn("min-h-screen w-full bg-background")}>
+    <div className={cn("h-screen w-full bg-background flex")}>
       <SidebarProvider>
         <AppSidebar />
         <Content />
