@@ -17,8 +17,8 @@ export const AdminSettings = ({ className }: AdminSettingsProps) => {
   return (
     <div className={cn("flex flex-1 flex-col", className)}>
       <div className="flex-1 space-y-6 p-6">
-        <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 max-w-3xl">
+        <Tabs defaultValue="users">
+          <TabsList className="max-w-3xl">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Utilisateurs
