@@ -153,6 +153,8 @@ export async function POST(request: NextRequest) {
       start_date,
       end_date,
       address,
+      category,
+      type,
     } = body;
 
     // Validate required fields
@@ -186,6 +188,8 @@ export async function POST(request: NextRequest) {
       start_date: start_date || null,
       end_date: end_date || null,
       address: address || null,
+      category: category || null,
+      type: type || null,
       progress: 0,
       spent_amount: 0,
     };

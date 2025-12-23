@@ -1,16 +1,7 @@
-/**
- * Project types
- *
- * These extend database schema types (from types/supabase/) with application-specific fields.
- */
-
 import type { ProjectRow } from "./supabase/projects.types";
 import type { ProjectPhaseRow } from "./supabase/projects.types";
 import type { ProjectPartnerRow } from "./supabase/projects.types";
 
-/**
- * Project type - extends ProjectRow with optional client info (populated by API)
- */
 export interface Project extends ProjectRow {
   // Client info (populated by API)
   client?: {

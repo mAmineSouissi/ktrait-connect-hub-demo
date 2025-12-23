@@ -1,4 +1,6 @@
 import type { Project, ProjectWithDetails } from "@/types/project.types";
+import type { ProjectCategoryType } from "@/types/enums/project-category.enum";
+import type { ProjectTypeType } from "@/types/enums/project-type.enum";
 
 const API_BASE = "/api/admin/projects";
 
@@ -20,6 +22,8 @@ export interface CreateProjectRequest {
   start_date?: string;
   end_date?: string;
   address?: string;
+  category?: ProjectCategoryType;
+  type?: ProjectTypeType;
 }
 
 export interface UpdateProjectRequest {
@@ -31,6 +35,8 @@ export interface UpdateProjectRequest {
   start_date?: string;
   end_date?: string;
   address?: string;
+  category?: ProjectCategoryType;
+  type?: ProjectTypeType;
 }
 
 export interface CreateProjectResponse {

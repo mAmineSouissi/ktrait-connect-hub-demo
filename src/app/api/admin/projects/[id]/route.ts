@@ -256,6 +256,8 @@ export async function PUT(
       start_date,
       end_date,
       address,
+      category,
+      type,
     } = body;
 
     // Build update object (only include provided fields)
@@ -272,6 +274,8 @@ export async function PUT(
     if (start_date !== undefined) updateData.start_date = start_date || null;
     if (end_date !== undefined) updateData.end_date = end_date || null;
     if (address !== undefined) updateData.address = address || null;
+    if (category !== undefined) updateData.category = category || null;
+    if (type !== undefined) updateData.type = type || null;
 
     const result = await typedUpdate("projects", updateData as ProjectUpdate)
       .eq("id", id)

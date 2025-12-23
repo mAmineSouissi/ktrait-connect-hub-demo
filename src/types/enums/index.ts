@@ -9,4 +9,6 @@ export * from "./partner-type.enum";
 export * from "./invoice-status.enum";
 export * from "./invoice-type.enum";
 export * from "./template-file-type.enum";
+export * from "./project-category.enum";
+export * from "./project-type.enum";
 export type { UserRole } from "../database.types";

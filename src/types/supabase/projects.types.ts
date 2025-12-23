@@ -2,6 +2,8 @@
  * Projects, Project Phases, and Project Partners table types
  */
 import type { ProjectStatus, StageStatus } from "../database.types";
+import type { ProjectCategoryType } from "../enums/project-category.enum";
+import type { ProjectTypeType } from "../enums/project-type.enum";
 
 // ==================== PROJECTS ====================
 export interface ProjectRow {
@@ -16,6 +18,8 @@ export interface ProjectRow {
   start_date?: string | null;
   end_date?: string | null;
   address?: string | null;
+  category?: ProjectCategoryType | null;
+  type?: ProjectTypeType | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,6 +36,8 @@ export interface ProjectInsert {
   start_date?: string | null;
   end_date?: string | null;
   address?: string | null;
+  category?: ProjectCategoryType | null;
+  type?: ProjectTypeType | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -47,6 +53,8 @@ export interface ProjectUpdate {
   start_date?: string | null;
   end_date?: string | null;
   address?: string | null;
+  category?: ProjectCategoryType | null;
+  type?: ProjectTypeType | null;
   updated_at?: string;
 }
 
