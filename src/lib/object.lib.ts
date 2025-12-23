@@ -1,7 +1,7 @@
 import { DisplayClient } from "@/components/shared/Displays.types";
 import { getUserStatus, UserListItem } from "@/types/user-management.types";
 
-type Crumb = { label: string; href?: string };
+export type Crumb = { label: string; href?: string };
 
 export const createSearchFilterExpression = (
   structure: Object,

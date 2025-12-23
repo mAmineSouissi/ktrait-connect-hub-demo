@@ -2,30 +2,16 @@ import React from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Bell, LogOut } from "lucide-react";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { buildBreadcrumbs } from "@/lib/object.lib";
 import { Separator } from "../ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../ui/breadcrumb";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface HeaderProps {
-  title?: string;
   className?: string;
 }
 
-export function Header({ title, className }: HeaderProps) {
-  const pathname = usePathname();
-  const crumbs = buildBreadcrumbs(pathname);
-
+export function Header({ className }: HeaderProps) {
   const { user, signOut } = useAuth();
 
   const handleLogout = React.useCallback(async () => {
@@ -50,35 +36,6 @@ export function Header({ title, className }: HeaderProps) {
         orientation="vertical"
         className="mr-2 data-[orientation=vertical]:h-4"
       />
-      <Breadcrumb>
-        <BreadcrumbList>
-          {crumbs.length === 0 ? (
-            <BreadcrumbItem>
-              <BreadcrumbPage>{title ?? "Accueil"}</BreadcrumbPage>
-            </BreadcrumbItem>
-          ) : (
-            crumbs.map((crumb, idx) => {
-              const isLast = idx === crumbs.length - 1;
-              return (
-                <React.Fragment key={`${crumb.href ?? crumb.label}-${idx}`}>
-                  <BreadcrumbItem
-                    className={idx === 0 ? "hidden md:block" : undefined}
-                  >
-                    {isLast ? (
-                      <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                    ) : (
-                      <BreadcrumbLink href={crumb.href}>
-                        {crumb.label}
-                      </BreadcrumbLink>
-                    )}
-                  </BreadcrumbItem>
-                  {!isLast && <BreadcrumbSeparator />}
-                </React.Fragment>
-              );
-            })
-          )}
-        </BreadcrumbList>
-      </Breadcrumb>
 
       <div className="flex justify-center items-center gap-4 ml-auto">
         {/* <UserNav />*/}

@@ -1,11 +1,17 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -90,8 +96,12 @@ const PartnerLogin = () => {
           <div className="mx-auto h-16 w-16 rounded-full bg-kpi-success flex items-center justify-center">
             <Briefcase className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-3xl font-bold">Espace Partenaire</CardTitle>
-          <CardDescription>Architectes, Ingénieurs & Fournisseurs</CardDescription>
+          <CardTitle className="text-3xl font-bold">
+            Espace Partenaire
+          </CardTitle>
+          <CardDescription>
+            Architectes, Ingénieurs & Fournisseurs
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -100,7 +110,10 @@ const PartnerLogin = () => {
             </div>
           ) : (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
