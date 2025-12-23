@@ -2,7 +2,6 @@ import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Home, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
 
 export default function Unauthorized() {
   const router = useRouter();
