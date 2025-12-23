@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "clean": "rm -rf .next",
+    "dev:clean": "npm run clean && next dev",
+    "build:clean": "npm run clean && next build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
