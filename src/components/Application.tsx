@@ -1,5 +1,4 @@
 import { AppProps } from "next/app";
-import { useRouter } from "next/router";
 import { Layout } from "./layout/Layout";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
@@ -12,18 +11,11 @@ interface ApplicationProps {
 }
 
 function Application({ className, Component, pageProps }: ApplicationProps) {
-  const router = useRouter();
-  const isAuthPage =
-    router.pathname === "/login" ||
-    router.pathname === "/register" ||
-    router.pathname === "/pending-approval";
-
   return (
     <AppContent
       className={className}
       Component={Component}
       pageProps={pageProps}
-      isAuthPage={isAuthPage}
     />
   );
 }
@@ -32,24 +24,14 @@ function AppContent({
   className,
   Component,
   pageProps,
-  isAuthPage,
 }: {
   className?: string;
   Component: AppProps["Component"];
   pageProps: AppProps["pageProps"];
-  isAuthPage: boolean;
 }) {
-  const { isAuthenticated, loading, user } = useAuth();
-  const router = useRouter();
+  const { isAuthenticated, loading } = useAuth();
 
-  if (
-    loading &&
-    !isAuthenticated &&
-    !user &&
-    !isAuthPage &&
-    router.pathname !== "/login" &&
-    router.pathname !== "/register"
-  ) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg">Chargement...</div>
@@ -58,13 +40,8 @@ function AppContent({
   }
 
   return (
-    <div
-      className={cn(
-        `flex flex-col min-h-screen w-full`,
-        className
-      )}
-    >
-      {isAuthPage || !isAuthenticated ? (
+    <div className={cn(`flex flex-col min-h-screen w-full`, className)}>
+      {!isAuthenticated ? (
         <Component {...pageProps} />
       ) : (
         <Layout className="flex w-full h-screen">
