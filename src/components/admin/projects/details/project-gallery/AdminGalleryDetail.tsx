@@ -12,7 +12,7 @@ import {
   Video,
   FileImage,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { api } from "@/api";
 import { formatDate } from "@/lib/date.util";
 import type { ProjectGalleryItem } from "@/types/gallery.types";

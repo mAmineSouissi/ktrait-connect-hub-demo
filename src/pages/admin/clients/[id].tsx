@@ -1,9 +1,8 @@
 import { AdminClientDetail } from "@/components/admin/clients/AdminClientDetail";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
-  const params = useParams();
-  const id = params?.id as string;
-
-  return <AdminClientDetail id={id} />;
+  const router = useRouter();
+  const { id } = router.query;
+  return <AdminClientDetail id={id as string} />;
 }

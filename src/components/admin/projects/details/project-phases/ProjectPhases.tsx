@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { ProjectPhase } from "@/types";
 import { api } from "@/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { usePhaseCreateSheet } from "./modals/PhaseCreateSheet";
 import { usePhaseUpdateSheet } from "./modals/PhaseUpdateSheet";
 import { PhaseDeleteDialog } from "./modals/PhaseDeleteDialog";

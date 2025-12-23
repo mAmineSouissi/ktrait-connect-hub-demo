@@ -14,7 +14,7 @@ import { formatDate } from "@/lib/date.util";
 import { DocumentWithDetails } from "@/types/document.types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 interface ProjectDocumentsProps {
   projectId: string;

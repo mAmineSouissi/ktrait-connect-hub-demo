@@ -1,8 +1,10 @@
 import { AdminProjectDetail } from "@/components/admin/projects/details/AdminProjectDetail";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
-  const params = useParams();
-  const id = params?.id as string;
-  return <AdminProjectDetail id={id} />;
+  const router = useRouter();
+  const { id } = router.query;
+
+  if (!id) return null;
+  return <AdminProjectDetail id={id as string} />;
 }

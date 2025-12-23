@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { ClientDetail } from "@/types/client.types";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 interface ClientProjectTableProps {
   client: ClientDetail;

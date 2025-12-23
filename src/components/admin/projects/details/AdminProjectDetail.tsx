@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import type { ProjectWithDetails } from "@/types/project.types";
 import { BasicProjectDetails } from "./project-cards/BasicProjectDetails";
 import { ProjectDetailsTabs } from "./ProjectDetailsTabs";

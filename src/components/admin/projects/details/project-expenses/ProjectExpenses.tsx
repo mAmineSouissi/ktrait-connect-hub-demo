@@ -15,7 +15,7 @@ import { formatDate } from "@/lib/date.util";
 import { ExpenseWithDetails } from "@/types/expense.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit, Eye, Loader2, Plus, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import React from "react";
 import { toast } from "sonner";
 import { useExpenseCreateSheet } from "./modals/ExpenseCreateSheet";

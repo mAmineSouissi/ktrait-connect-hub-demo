@@ -12,7 +12,7 @@ import {
   Building2,
   Receipt,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { api } from "@/api";
 import { formatDate } from "@/lib/date.util";
 import { formatAmount } from "@/lib/currency.util";
@@ -35,7 +35,10 @@ const categoryMap: Record<string, string> = {
   autres: "Autres",
 };
 
-export const AdminExpenseDetail = ({ projectId, expenseId }: AdminExpenseDetailProps) => {
+export const AdminExpenseDetail = ({
+  projectId,
+  expenseId,
+}: AdminExpenseDetailProps) => {
   const router = useRouter();
 
   const {

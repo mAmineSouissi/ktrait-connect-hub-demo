@@ -1,11 +1,8 @@
-"use client";
-
 import { AdminExpenseDetail } from "@/components/admin/projects/details/project-expenses/AdminExpenseDetail";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
-  const params = useParams();
-  const expenseId = params?.id as string;
-
-  return <AdminExpenseDetail expenseId={expenseId} />;
+  const router = useRouter();
+  const { id } = router.query;
+  return <AdminExpenseDetail expenseId={id as string} />;
 }

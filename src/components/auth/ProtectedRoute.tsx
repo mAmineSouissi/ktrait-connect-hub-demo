@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import type { UserRole } from "@/types/database.types";
 import { Role } from "@/types/enums";

@@ -16,7 +16,7 @@ import type {
 } from "@/types/client.types";
 import type { DisplayClient } from "@/components/shared/Displays.types";
 import { DataTableConfig } from "@/components/shared/data-tables/types";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { transformUserToClient } from "@/lib/object.lib";
 
 interface AdminClientsProps {

@@ -1,14 +1,8 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ClientProjectDetail } from "@/components/client/ClientProjectDetail";
-import { Role } from "@/types";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
-  const params = useParams();
-  const id = params?.id as string;
-  return (
-    <ProtectedRoute requiredRole={Role.CLIENT}>
-      <ClientProjectDetail id={id} />
-    </ProtectedRoute>
-  );
+  const router = useRouter();
+  const { id } = router.query;
+  return <ClientProjectDetail id={id as string} />;
 }

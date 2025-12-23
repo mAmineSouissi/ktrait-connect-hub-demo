@@ -21,7 +21,7 @@ import {
   CheckSquare,
   Image,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 const projectData = {
   id: 1,

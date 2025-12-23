@@ -5,7 +5,7 @@ import { formatDate } from "@/lib/date.util";
 import { ProjectGalleryItem } from "@/types/gallery.types";
 import { Edit, Image, Loader2, Plus, Trash2 } from "lucide-react";
 import { useGalleryCreateSheet } from "./modals/GalleryCreateSheet";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
 import { toast } from "sonner";

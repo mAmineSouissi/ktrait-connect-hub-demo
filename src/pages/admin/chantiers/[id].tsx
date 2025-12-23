@@ -1,13 +1,12 @@
 import { AdminChantierDetail } from "@/components/admin/chantiers/AdminChantierDetail";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
-  const params = useParams();
-  const id = params?.id;
-
-  if (!id || Array.isArray(id)) {
+  const router = useRouter();
+  const { id } = router.query;
+  if (!id) {
     return null;
   }
 
-  return <AdminChantierDetail id={id} />;
+  return <AdminChantierDetail id={id as string} />;
 }

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { ClientCard } from "./ClientCard";
 import { ClientTableTabs } from "./ClientTableTabs";
 import { api } from "@/api";

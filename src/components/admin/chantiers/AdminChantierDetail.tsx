@@ -14,13 +14,12 @@ import {
   Calendar,
   Users,
   Image,
-  MessageSquare,
   Loader2,
   Plus,
   Edit,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { useTeamMemberCreateSheet } from "./details/team/modals/TeamMemberCreateSheet";
 import { useTeamMemberUpdateSheet } from "./details/team/modals/TeamMemberUpdateSheet";

@@ -28,7 +28,7 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import type { ProjectWithDetails, ProjectPhase } from "@/types/project.types";
 import type { DocumentWithDetails } from "@/types/document.types";

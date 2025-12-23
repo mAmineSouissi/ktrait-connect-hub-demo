@@ -1,12 +1,10 @@
-"use client";
-
 import { ProjectPhaseDetails } from "@/components/admin/projects/details/project-phases/ProjectPhaseDetails";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
-  const params = useParams();
-  const projectId = params?.id as string;
-  const phaseId = params?.phaseId as string;
-
-  return <ProjectPhaseDetails projectId={projectId} phaseId={phaseId} />;
+  const router = useRouter();
+  const { id, phaseId } = router.query;
+  return (
+    <ProjectPhaseDetails projectId={id as string} phaseId={phaseId as string} />
+  );
 }

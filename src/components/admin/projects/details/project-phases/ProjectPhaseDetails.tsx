@@ -13,7 +13,7 @@ import {
   Clock,
   CheckCircle2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { api } from "@/api";
 import type { ProjectPhase } from "@/types/project.types";
 

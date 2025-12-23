@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Edit, Eye, Loader2, Mail, MapPin, Phone, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 interface ClientsTableProps {
   filteredClients: DisplayClient[];

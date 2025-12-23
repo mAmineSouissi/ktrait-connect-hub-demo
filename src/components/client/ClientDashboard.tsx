@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 const ClientDashboard = () => {
   const router = useRouter();

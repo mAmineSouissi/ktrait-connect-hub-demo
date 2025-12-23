@@ -25,7 +25,7 @@ import {
   ImageIcon,
   Loader2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { api } from "@/api";
 import { useQuery } from "@tanstack/react-query";
 import type { PartnerWithDetails } from "@/types/partner.types";

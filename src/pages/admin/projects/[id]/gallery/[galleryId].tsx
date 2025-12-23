@@ -1,12 +1,18 @@
 "use client";
 
 import { AdminGalleryDetail } from "@/components/admin/projects/details/project-gallery/AdminGalleryDetail";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
-  const params = useParams();
-  const projectId = params?.id as string;
-  const galleryId = params?.galleryId as string;
+  const router = useRouter();
+  const { id, galleryId } = router.query;
 
-  return <AdminGalleryDetail projectId={projectId} galleryId={galleryId} />;
+  if (!id || !galleryId) return null;
+
+  return (
+    <AdminGalleryDetail
+      projectId={id as string}
+      galleryId={galleryId as string}
+    />
+  );
 }

@@ -16,7 +16,7 @@ import type {
 } from "@/api/admin/partners";
 import type { PartnerWithCounts } from "@/api/admin/partners";
 import { DataTableConfig } from "@/components/shared/data-tables/types";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 interface AdminPartnersProps {
   className?: string;

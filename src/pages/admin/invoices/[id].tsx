@@ -1,15 +1,12 @@
-"use client";
-
 import { AdminInvoiceDetail } from "@/components/admin/invoices/AdminInvoiceDetail";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
-  const params = useParams();
-  const id = params?.id as string;
-
+  const router = useRouter();
+  const { id } = router.query;
   if (!id) {
     return <div>Invoice ID is required</div>;
   }
 
-  return <AdminInvoiceDetail id={id} />;
+  return <AdminInvoiceDetail id={id as string} />;
 }
