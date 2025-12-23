@@ -46,15 +46,6 @@ export const AdminDashboard = () => {
     <div className="flex min-h-screen w-full">
       <div className="flex-1">
         <div className="p-6 space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              Dashboard Administration
-            </h1>
-            <p className="text-muted-foreground">
-              Vue d'ensemble de la plateforme KTRAIT
-            </p>
-          </div>
-
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div
               onClick={() => navigate.push("/admin/projects")}
