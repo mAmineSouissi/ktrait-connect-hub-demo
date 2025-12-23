@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { typedTable } from "@/lib/supabase/typed-client";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createAppRouteClient } from "@/lib/supabase/app-route-client";
 import type {
   ChantierTeamInsert,
-  ChantierTeamUpdate,
 } from "@/types/supabase-database.types";
 
 async function isAdmin(): Promise<boolean> {

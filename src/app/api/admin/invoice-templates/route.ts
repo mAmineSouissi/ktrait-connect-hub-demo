@@ -4,7 +4,6 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createAppRouteClient } from "@/lib/supabase/app-route-client";
 import type {
   TemplateListResponse,
-  CreateTemplateRequest,
   CreateTemplateResponse,
 } from "@/types/invoice-template.types";
 import type {

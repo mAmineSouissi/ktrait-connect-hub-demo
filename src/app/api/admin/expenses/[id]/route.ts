@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { typedTable, typedUpdate } from "@/lib/supabase/typed-client";
 import { createAppRouteClient } from "@/lib/supabase/app-route-client";
-import type { Expense } from "@/types/expense.types";
 import type {
   ExpenseRow,
   ExpenseUpdate,

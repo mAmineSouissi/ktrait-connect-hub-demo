@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { typedTable, typedUpdate } from "@/lib/supabase/typed-client";
+import { typedTable } from "@/lib/supabase/typed-client";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createAppRouteClient } from "@/lib/supabase/app-route-client";
 import type {

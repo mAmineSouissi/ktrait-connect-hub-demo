@@ -9,9 +9,6 @@ import { createAppRouteClient } from "@/lib/supabase/app-route-client";
 import type {
   PartnerRow,
   PartnerInsert,
-  PartnerUpdate,
-  UserRow,
-  UserInsert,
   PartnerProfileInsert,
 } from "@/types/supabase-database.types";
 

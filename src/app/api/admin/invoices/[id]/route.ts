@@ -17,8 +17,6 @@ import type {
   InvoiceUpdate,
   InvoiceItemRow,
   InvoiceItemInsert,
-  InvoiceItemUpdate,
-  UserRow,
 } from "@/types/supabase-database.types";
 
 // Route segment config

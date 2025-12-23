@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { typedTable, typedInsert } from "@/lib/supabase/typed-client";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createAppRouteClient } from "@/lib/supabase/app-route-client";
-import type { Project, ProjectWithDetails } from "@/types/project.types";
 import type {
   ProjectRow,
   ProjectInsert,

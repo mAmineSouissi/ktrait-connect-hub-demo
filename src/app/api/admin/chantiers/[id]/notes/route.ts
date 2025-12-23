@@ -3,7 +3,6 @@ import { typedTable } from "@/lib/supabase/typed-client";
 import { createAppRouteClient } from "@/lib/supabase/app-route-client";
 import type {
   ChantierNoteInsert,
-  ChantierNoteUpdate,
 } from "@/types/supabase-database.types";
 
 async function isAdmin(): Promise<boolean> {
