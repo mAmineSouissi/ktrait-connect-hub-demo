@@ -5,6 +5,14 @@ import { DataTableConfig } from "@/components/shared/data-tables/types";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import type { Project } from "@/types/project.types";
+import {
+  PROJECT_CATEGORY_LABELS,
+  type ProjectCategoryType,
+} from "@/types/enums/project-category.enum";
+import {
+  PROJECT_TYPE_LABELS,
+  type ProjectTypeType,
+} from "@/types/enums/project-type.enum";
 
 const statusMap: Record<string, string> = {
   planifié: "Planifié",
@@ -137,6 +145,55 @@ export const useProjectColumns = (
             }
           >
             {statusMap[project.status] || project.status}
+          </Badge>
+        );
+      },
+      enableSorting: true,
+      enableHiding: true,
+    },
+    {
+      accessorKey: "category",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Catégorie"
+          attribute="category"
+          context={context}
+        />
+      ),
+      cell: ({ row }) => {
+        const project = row.original;
+        const category = (project as any).category as
+          | ProjectCategoryType
+          | undefined;
+        if (!category)
+          return <span className="text-muted-foreground">N/A</span>;
+        return (
+          <Badge variant="outline" className="text-xs">
+            {PROJECT_CATEGORY_LABELS[category]}
+          </Badge>
+        );
+      },
+      enableSorting: true,
+      enableHiding: true,
+    },
+    {
+      accessorKey: "type",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Type"
+          attribute="type"
+          context={context}
+        />
+      ),
+      cell: ({ row }) => {
+        const project = row.original;
+        const type = (project as any).type as ProjectTypeType | undefined;
+        if (!type) return <span className="text-muted-foreground">N/A</span>;
+        return (
+          <Badge variant="outline" className="text-xs">
+            {PROJECT_TYPE_LABELS[type]}
           </Badge>
         );
       },

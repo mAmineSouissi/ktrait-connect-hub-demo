@@ -209,6 +209,8 @@ export default function AdminProjects({ className }: AdminProjectsProps) {
           end_date: data.end_date || undefined,
           address: data.address || undefined,
           progress: data.progress,
+          category: data.category || undefined,
+          type: data.type || undefined,
         },
       });
     }

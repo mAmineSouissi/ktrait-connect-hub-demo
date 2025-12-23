@@ -5,6 +5,8 @@ import type {
   UpdateProjectRequest,
 } from "@/api/admin/projects";
 import type { Project } from "@/types/project.types";
+import type { ProjectCategoryType } from "@/types/enums/project-category.enum";
+import type { ProjectTypeType } from "@/types/enums/project-type.enum";
 
 interface ProjectStoreData {
   response?: Project;
@@ -25,6 +27,8 @@ const initialState: ProjectStoreData = {
     start_date: undefined,
     end_date: undefined,
     address: undefined,
+    category: undefined,
+    type: undefined,
   },
   updateDto: {
     name: undefined,
@@ -35,6 +39,8 @@ const initialState: ProjectStoreData = {
     end_date: undefined,
     address: undefined,
     progress: undefined,
+    category: undefined,
+    type: undefined,
   },
   createDtoErrors: {},
   updateDtoErrors: {},
@@ -89,6 +95,8 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         end_date: project.end_date || undefined,
         address: project.address || undefined,
         progress: project.progress,
+        category: (project as any).category || undefined,
+        type: (project as any).type || undefined,
       },
       updateDtoErrors: {},
     });

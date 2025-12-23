@@ -18,6 +18,16 @@ import { cn } from "@/lib/utils";
 import { useProjectStore } from "@/hooks/stores/useProjectStore";
 import type { UpdateProjectRequest } from "@/api/admin/projects";
 import type { Project } from "@/types/project.types";
+import {
+  ProjectCategory,
+  PROJECT_CATEGORY_LABELS,
+  type ProjectCategoryType,
+} from "@/types/enums/project-category.enum";
+import {
+  ProjectType,
+  PROJECT_TYPE_LABELS,
+  type ProjectTypeType,
+} from "@/types/enums/project-type.enum";
 
 // Re-export for convenience
 export type { UpdateProjectRequest };
@@ -36,6 +46,16 @@ const statusOptions = [
   { value: "terminé", label: "Terminé" },
   { value: "annulé", label: "Annulé" },
 ];
+
+const categoryOptions = Object.values(ProjectCategory).map((category) => ({
+  value: category,
+  label: PROJECT_CATEGORY_LABELS[category],
+}));
+
+const typeOptions = Object.values(ProjectType).map((type) => ({
+  value: type,
+  label: PROJECT_TYPE_LABELS[type],
+}));
 
 export const ProjectUpdateForm: React.FC<ProjectUpdateFormProps> = ({
   className,
@@ -95,6 +115,54 @@ export const ProjectUpdateForm: React.FC<ProjectUpdateFormProps> = ({
         {updateDtoErrors.name && (
           <p className="text-sm text-destructive">{updateDtoErrors.name}</p>
         )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="category">Catégorie</Label>
+          <Select
+            value={updateDto.category || "__none__"}
+            onValueChange={(value) =>
+              setUpdateField("category", value === "__none__" ? undefined : (value as ProjectCategoryType))
+            }
+            disabled={isUpdatePending}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner une catégorie" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">Aucune</SelectItem>
+              {categoryOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="type">Type</Label>
+          <Select
+            value={updateDto.type || "__none__"}
+            onValueChange={(value) =>
+              setUpdateField("type", value === "__none__" ? undefined : (value as ProjectTypeType))
+            }
+            disabled={isUpdatePending}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner un type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">Aucun</SelectItem>
+              {typeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

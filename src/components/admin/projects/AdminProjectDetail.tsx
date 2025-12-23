@@ -45,6 +45,14 @@ import { formatAmount, formatBudget } from "@/lib/currency.util";
 import { usePhaseCreateSheet } from "./details/project-phases/modals/PhaseCreateSheet";
 import { usePhaseUpdateSheet } from "./details/project-phases/modals/PhaseUpdateSheet";
 import { PhaseDeleteDialog } from "./details/project-phases/modals/PhaseDeleteDialog";
+import {
+  PROJECT_CATEGORY_LABELS,
+  type ProjectCategoryType,
+} from "@/types/enums/project-category.enum";
+import {
+  PROJECT_TYPE_LABELS,
+  type ProjectTypeType,
+} from "@/types/enums/project-type.enum";
 
 interface AdminProjectDetailProps {
   id: string;
@@ -515,8 +523,28 @@ export const AdminProjectDetail = ({ id }: AdminProjectDetailProps) => {
       <div className="grid lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-start justify-between">
-            <div>
-              <CardTitle className="text-2xl">{project.name}</CardTitle>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <CardTitle className="text-2xl">{project.name}</CardTitle>
+                {(project as any).category && (
+                  <Badge variant="outline" className="text-xs">
+                    {
+                      PROJECT_CATEGORY_LABELS[
+                        (project as any).category as ProjectCategoryType
+                      ]
+                    }
+                  </Badge>
+                )}
+                {(project as any).type && (
+                  <Badge variant="outline" className="text-xs">
+                    {
+                      PROJECT_TYPE_LABELS[
+                        (project as any).type as ProjectTypeType
+                      ]
+                    }
+                  </Badge>
+                )}
+              </div>
               {project.description && (
                 <p className="text-muted-foreground mt-1">
                   {project.description}
