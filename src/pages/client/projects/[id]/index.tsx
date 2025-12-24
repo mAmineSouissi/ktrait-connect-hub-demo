@@ -1,4 +1,4 @@
-import { ClientProjectDetail } from "@/components/client/ClientProjectDetail";
+import { ClientProjectDetail } from "@/components/client/projects/ClientProjectDetail";
 import { useRouter } from "next/router";
 
 export default function Page() {
