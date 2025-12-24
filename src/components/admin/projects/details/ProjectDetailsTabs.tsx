@@ -4,6 +4,7 @@ import { ProjectGallary } from "./project-gallery/ProjectGallary";
 import { ProjectExpenses } from "./project-expenses/ProjectExpenses";
 import { ProjectDocuments } from "./project-documents/ProjectDocuments";
 import { ProjectPartners } from "./project-partners/ProjectPartners";
+import { ProjectPayments } from "./project-payments/ProjectPayments";
 import React from "react";
 import {
   DollarSignIcon,
@@ -11,6 +12,7 @@ import {
   ImageIcon,
   ListIcon,
   UserCheckIcon,
+  CreditCard,
 } from "lucide-react";
 
 interface ProjectDetailsTabsProps {
@@ -46,6 +48,12 @@ export const ProjectDetailsTabs = ({ projectId }: ProjectDetailsTabsProps) => {
       content: <ProjectExpenses projectId={projectId} />,
     },
     {
+      value: "payments",
+      label: "Paiements",
+      icon: <CreditCard className="h-4 w-4" />,
+      content: <ProjectPayments projectId={projectId} />,
+    },
+    {
       value: "gallery",
       label: "Galerie",
       icon: <ImageIcon className="h-4 w-4" />,
@@ -59,7 +67,7 @@ export const ProjectDetailsTabs = ({ projectId }: ProjectDetailsTabsProps) => {
       onValueChange={setActiveTab}
       className="w-full"
     >
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-6">
         {tabs.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>
             {tab.icon} {tab.label}

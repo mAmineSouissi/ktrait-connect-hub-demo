@@ -21,6 +21,38 @@ import type { Project } from "@/types/project.types";
 import type { InvoiceTemplate } from "@/types/invoice-template.types";
 import { INVOICE_STATUS_LABELS } from "@/types/enums";
 
+// Helper function to format date to YYYY-MM-DD for date input
+const formatDateForInput = (date: string | Date | null | undefined): string => {
+  if (!date) return "";
+  try {
+    let dateObj: Date;
+    if (typeof date === "string") {
+      // Handle different date string formats
+      // If it's already in YYYY-MM-DD format, return as is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return date;
+      }
+      // Try parsing as ISO string or other formats
+      dateObj = new Date(date);
+    } else {
+      dateObj = date;
+    }
+    
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) {
+      return "";
+    }
+    
+    // Format to YYYY-MM-DD
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } catch {
+    return "";
+  }
+};
+
 interface InvoiceUpdateFormProps {
   className?: string;
   updateInvoice?: (data: UpdateInvoiceRequest) => void;
@@ -54,8 +86,8 @@ export const InvoiceUpdateForm: React.FC<InvoiceUpdateFormProps> = ({
     client_id: invoice?.client_id || "",
     project_id: invoice?.project_id || null,
     template_id: invoice?.template_id || null,
-    issue_date: invoice?.issue_date || "",
-    due_date: invoice?.due_date || null,
+    issue_date: formatDateForInput(invoice?.issue_date),
+    due_date: invoice?.due_date ? formatDateForInput(invoice.due_date) : null,
     status: invoice?.status || "draft",
     tax_rate: invoice?.tax_rate || 20.0,
     notes: invoice?.notes || null,
@@ -85,8 +117,8 @@ export const InvoiceUpdateForm: React.FC<InvoiceUpdateFormProps> = ({
         client_id: invoice.client_id,
         project_id: invoice.project_id || null,
         template_id: invoice.template_id || null,
-        issue_date: invoice.issue_date,
-        due_date: invoice.due_date || null,
+        issue_date: formatDateForInput(invoice.issue_date),
+        due_date: invoice.due_date ? formatDateForInput(invoice.due_date) : null,
         status: invoice.status,
         tax_rate: invoice.tax_rate,
         notes: invoice.notes || null,
@@ -357,7 +389,7 @@ export const InvoiceUpdateForm: React.FC<InvoiceUpdateFormProps> = ({
           <Input
             id="issue_date"
             type="date"
-            value={formData.issue_date}
+            value={formData.issue_date || ""}
             onChange={(e) => handleChange("issue_date", e.target.value)}
             required
             disabled={isUpdatePending}

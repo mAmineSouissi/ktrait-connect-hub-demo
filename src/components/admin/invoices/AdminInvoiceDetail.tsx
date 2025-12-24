@@ -599,9 +599,23 @@ export const AdminInvoiceDetail = ({ id }: AdminInvoiceDetailProps) => {
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <p className="font-medium">
-                        {new Date(invoice.issue_date).toLocaleDateString(
-                          "fr-FR"
-                        )}
+                        {invoice.issue_date
+                          ? (() => {
+                              try {
+                                const dateObj = new Date(invoice.issue_date);
+                                if (isNaN(dateObj.getTime())) {
+                                  return "—";
+                                }
+                                return dateObj.toLocaleDateString("fr-FR", {
+                                  year: "numeric",
+                                  month: "2-digit",
+                                  day: "2-digit",
+                                });
+                              } catch {
+                                return "—";
+                              }
+                            })()
+                          : "—"}
                       </p>
                     </div>
                   </div>
@@ -614,9 +628,21 @@ export const AdminInvoiceDetail = ({ id }: AdminInvoiceDetailProps) => {
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <p className="font-medium">
-                          {new Date(invoice.due_date).toLocaleDateString(
-                            "fr-FR"
-                          )}
+                          {(() => {
+                            try {
+                              const dateObj = new Date(invoice.due_date);
+                              if (isNaN(dateObj.getTime())) {
+                                return "—";
+                              }
+                              return dateObj.toLocaleDateString("fr-FR", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                              });
+                            } catch {
+                              return "—";
+                            }
+                          })()}
                         </p>
                       </div>
                     </div>

@@ -64,7 +64,7 @@ export const ChantierCreateForm: React.FC<ChantierCreateFormProps> = ({
           Projet <span className="text-destructive">*</span>
         </Label>
         <Select
-          value={createDto.project_id || ""}
+          value={createDto.project_id || undefined}
           onValueChange={(value) => setCreateField("project_id", value)}
           disabled={isCreatePending}
         >

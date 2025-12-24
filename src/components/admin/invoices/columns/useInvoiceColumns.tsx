@@ -122,11 +122,23 @@ export const useInvoiceColumns = (
       ),
       cell: ({ row }) => {
         const date = row.original.issue_date;
-        return date ? (
-          new Date(date).toLocaleDateString("fr-FR")
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        );
+        if (!date) {
+          return <span className="text-muted-foreground">—</span>;
+        }
+        try {
+          const dateObj = new Date(date);
+          // Check if date is valid
+          if (isNaN(dateObj.getTime())) {
+            return <span className="text-muted-foreground">—</span>;
+          }
+          return dateObj.toLocaleDateString("fr-FR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          });
+        } catch {
+          return <span className="text-muted-foreground">—</span>;
+        }
       },
       enableHiding: true,
     },
@@ -142,11 +154,23 @@ export const useInvoiceColumns = (
       ),
       cell: ({ row }) => {
         const dueDate = row.original.due_date;
-        return dueDate ? (
-          new Date(dueDate).toLocaleDateString("fr-FR")
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        );
+        if (!dueDate) {
+          return <span className="text-muted-foreground">—</span>;
+        }
+        try {
+          const dateObj = new Date(dueDate);
+          // Check if date is valid
+          if (isNaN(dateObj.getTime())) {
+            return <span className="text-muted-foreground">—</span>;
+          }
+          return dateObj.toLocaleDateString("fr-FR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          });
+        } catch {
+          return <span className="text-muted-foreground">—</span>;
+        }
       },
       enableHiding: true,
     },

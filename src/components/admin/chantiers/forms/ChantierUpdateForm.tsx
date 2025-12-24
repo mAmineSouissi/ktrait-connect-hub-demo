@@ -43,15 +43,16 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
   chantier,
   projects = [],
 }) => {
-  const { updateDto, setUpdateField, updateDtoErrors, response } =
+  const { updateDto, setUpdateField, updateDtoErrors, response, initializeUpdateDto } =
     useChantierStore();
 
   // Ensure form is populated when chantier changes
   useEffect(() => {
-    if (chantier && chantier.id === response?.id) {
-      // Form should already be initialized by AdminChantiers
+    if (chantier && (!response || chantier.id !== response.id)) {
+      // Initialize the form if chantier prop is provided and different from store response
+      initializeUpdateDto(chantier);
     }
-  }, [chantier, response]);
+  }, [chantier, response, initializeUpdateDto]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +65,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
       return;
     }
 
-    if (!response?.id) {
+    if (!currentChantier?.id) {
       toast.error("ID du chantier manquant");
       return;
     }
@@ -72,7 +73,10 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
     updateChantier?.();
   };
 
-  if (!response) {
+  // Use chantier prop if available, otherwise use store response
+  const currentChantier = chantier || response;
+
+  if (!currentChantier) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         Aucun chantier sélectionné
@@ -85,7 +89,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
       <div className="space-y-2">
         <Label htmlFor="project_id">Projet</Label>
         <Select
-          value={updateDto.project_id || response.project_id || ""}
+          value={updateDto.project_id !== undefined ? updateDto.project_id : (currentChantier?.project_id || undefined)}
           onValueChange={(value) => setUpdateField("project_id", value)}
           disabled={isUpdatePending}
         >
@@ -109,7 +113,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
         <Input
           id="name"
           placeholder="Ex: Site principal - Villa"
-          value={updateDto.name || ""}
+          value={updateDto.name !== undefined ? updateDto.name : (currentChantier?.name || "")}
           onChange={(e) => setUpdateField("name", e.target.value)}
           required
           disabled={isUpdatePending}
@@ -127,7 +131,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
         <Input
           id="location"
           placeholder="Ex: 123 Rue des Oliviers, 13100 Aix-en-Provence"
-          value={updateDto.location || ""}
+          value={updateDto.location !== undefined ? updateDto.location : (currentChantier?.location || "")}
           onChange={(e) => setUpdateField("location", e.target.value)}
           required
           disabled={isUpdatePending}
@@ -142,7 +146,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
         <div className="space-y-2">
           <Label htmlFor="status">Statut</Label>
           <Select
-            value={updateDto.status || response.status || "planifié"}
+            value={updateDto.status !== undefined ? updateDto.status : (currentChantier?.status || "planifié")}
             onValueChange={(value) => setUpdateField("status", value as any)}
             disabled={isUpdatePending}
           >
@@ -168,7 +172,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
             value={
               updateDto.progress !== undefined
                 ? updateDto.progress
-                : response.progress
+                : (currentChantier?.progress || 0)
             }
             onChange={(e) =>
               setUpdateField("progress", parseInt(e.target.value) || 0)
@@ -186,7 +190,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
           <Input
             id="start_date"
             type="date"
-            value={updateDto.start_date || response.start_date || ""}
+            value={updateDto.start_date !== undefined ? updateDto.start_date : (currentChantier?.start_date || "")}
             onChange={(e) => setUpdateField("start_date", e.target.value)}
             disabled={isUpdatePending}
           />
@@ -197,7 +201,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
           <Input
             id="end_date"
             type="date"
-            value={updateDto.end_date || response.end_date || ""}
+            value={updateDto.end_date !== undefined ? updateDto.end_date : (currentChantier?.end_date || "")}
             onChange={(e) => setUpdateField("end_date", e.target.value)}
             disabled={isUpdatePending}
           />
@@ -209,7 +213,7 @@ export const ChantierUpdateForm: React.FC<ChantierUpdateFormProps> = ({
         <Textarea
           id="description"
           placeholder="Description du chantier..."
-          value={updateDto.description || response.description || ""}
+          value={updateDto.description !== undefined ? updateDto.description : (currentChantier?.description || "")}
           onChange={(e) => setUpdateField("description", e.target.value)}
           disabled={isUpdatePending}
           rows={4}

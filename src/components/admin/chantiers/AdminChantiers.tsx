@@ -229,6 +229,7 @@ export default function AdminChantiers({ className }: AdminChantiersProps) {
       router.push(`/admin/chantiers/${chantier.id}`);
     },
     updateCallback: (chantier: ChantierWithCounts) => {
+      chantierStore.set("response", chantier);
       chantierStore.initializeUpdateDto(chantier);
       openUpdateChantierSheet();
     },
