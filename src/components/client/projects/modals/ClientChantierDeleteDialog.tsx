@@ -1,0 +1,78 @@
+"use client";
+
+import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import type { ChantierRow } from "@/types/supabase-database.types";
+
+interface ClientChantierDeleteDialogProps {
+  chantier: ChantierRow | null;
+  onDelete: (id: string) => void | Promise<void>;
+  isDeleting?: boolean;
+  isOpen?: boolean;
+  onClose: () => void;
+}
+
+export const ClientChantierDeleteDialog = ({
+  chantier,
+  onDelete,
+  isDeleting = false,
+  isOpen = false,
+  onClose,
+}: ClientChantierDeleteDialogProps) => {
+  const handleDelete = async () => {
+    if (chantier) {
+      await onDelete(chantier.id);
+      onClose();
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+    }
+  };
+
+  return (
+    <Dialog open={isOpen && !!chantier} onOpenChange={handleOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirmer la suppression</DialogTitle>
+          <DialogDescription>
+            Êtes-vous sûr de vouloir supprimer le chantier "{chantier?.name}" ?
+            Cette action est irréversible et supprimera également toutes les
+            données associées (équipe, planning, galerie, notes).
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isDeleting}>
+            Annuler
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Suppression...
+              </>
+            ) : (
+              "Supprimer"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
