@@ -15,13 +15,13 @@ import {
 import { formatAmount } from "@/lib/currency.util";
 import { DataTable } from "@/components/shared/data-tables/data-table";
 import { DataTableConfig } from "@/components/shared/data-tables/types";
-import { useClientInvoiceColumns } from "./billing/columns/useClientInvoiceColumns";
-import { useClientPaymentColumns } from "./billing/columns/useClientPaymentColumns";
+import { useClientInvoiceColumns } from "./invoices/columns/useClientInvoiceColumns";
+import { useClientPaymentColumns } from "./invoices/columns/useClientPaymentColumns";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { Invoice } from "@/types/invoice.types";
 import type { PaymentWithDetails } from "@/types/payment.types";
 
-export const ClientBilling = () => {
+export const ClientInvoices = () => {
   const router = useRouter();
 
   // State for factures tab
@@ -214,7 +214,7 @@ export const ClientBilling = () => {
     searchTerm: debouncedFacturesSearchTerm,
     setSearchTerm: setFacturesSearchTerm,
     inspectCallback: (invoice) => {
-      router.push(`/client/billing/${invoice.id}`);
+      router.push(`/client/invoices/${invoice.id}`);
     },
   };
 
@@ -232,7 +232,7 @@ export const ClientBilling = () => {
     searchTerm: debouncedDevisSearchTerm,
     setSearchTerm: setDevisSearchTerm,
     inspectCallback: (invoice) => {
-      router.push(`/client/billing/${invoice.id}`);
+      router.push(`/client/invoices/${invoice.id}`);
     },
   };
 

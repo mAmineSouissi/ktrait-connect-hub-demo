@@ -35,7 +35,10 @@ interface ClientInvoiceDetailProps {
   id: string;
 }
 
-const statusVariants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const statusVariants: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   draft: "outline",
   sent: "secondary",
   validated: "default",
@@ -89,7 +92,7 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
         </p>
         <Button
           variant="outline"
-          onClick={() => router.push("/client/billing")}
+          onClick={() => router.push("/client/invoices")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Retour aux factures
@@ -105,7 +108,7 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => router.push("/client/billing")}
+              onClick={() => router.push("/client/invoices")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Retour
@@ -151,7 +154,9 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
                         <TableRow>
                           <TableHead>Description</TableHead>
                           <TableHead className="text-right">Quantité</TableHead>
-                          <TableHead className="text-right">Prix unitaire</TableHead>
+                          <TableHead className="text-right">
+                            Prix unitaire
+                          </TableHead>
                           <TableHead className="text-right">Total</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -173,7 +178,10 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={4} className="text-center text-muted-foreground">
+                            <TableCell
+                              colSpan={4}
+                              className="text-center text-muted-foreground"
+                            >
                               Aucun élément
                             </TableCell>
                           </TableRow>
@@ -186,7 +194,9 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
                   <div className="flex justify-end">
                     <div className="w-full max-w-md space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Sous-total</span>
+                        <span className="text-muted-foreground">
+                          Sous-total
+                        </span>
                         <span className="font-medium">
                           {formatAmount(invoice.subtotal)}
                         </span>
@@ -240,7 +250,9 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
                       <Calendar className="h-4 w-4" />
                       <span>Date d'émission</span>
                     </div>
-                    <p className="font-medium">{formatDate(invoice.issue_date)}</p>
+                    <p className="font-medium">
+                      {formatDate(invoice.issue_date)}
+                    </p>
                   </div>
 
                   {invoice.due_date && (
@@ -249,7 +261,9 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
                         <Calendar className="h-4 w-4" />
                         <span>Date d'échéance</span>
                       </div>
-                      <p className="font-medium">{formatDate(invoice.due_date)}</p>
+                      <p className="font-medium">
+                        {formatDate(invoice.due_date)}
+                      </p>
                     </div>
                   )}
 
@@ -308,11 +322,14 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
                       <div className="flex items-start gap-2 text-sm">
                         <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          {invoice.client.address && <p>{invoice.client.address}</p>}
+                          {invoice.client.address && (
+                            <p>{invoice.client.address}</p>
+                          )}
                           {invoice.client.city && (
                             <p>
                               {invoice.client.city}
-                              {invoice.client.postal_code && ` ${invoice.client.postal_code}`}
+                              {invoice.client.postal_code &&
+                                ` ${invoice.client.postal_code}`}
                             </p>
                           )}
                         </div>
@@ -328,4 +345,3 @@ export const ClientInvoiceDetail = ({ id }: ClientInvoiceDetailProps) => {
     </div>
   );
 };
-

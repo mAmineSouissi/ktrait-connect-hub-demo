@@ -72,7 +72,8 @@ export const pageMetadataConfig: RouteMetadataConfig[] = [
         { label: "Détail", href: undefined },
       ],
       title: "Détails du partenaire",
-      description: "Consultez et gérez les informations détaillées du partenaire",
+      description:
+        "Consultez et gérez les informations détaillées du partenaire",
     }),
   },
   {
@@ -184,6 +185,51 @@ export const pageMetadataConfig: RouteMetadataConfig[] = [
       ],
       title: "Mes projets",
       description: "Consultez tous vos projets",
+    },
+  },
+  {
+    pattern: /^\/client\/invoices\/[^/]+$/,
+    metadata: (params) => ({
+      breadcrumbs: [
+        { label: "Dashboard", href: "/client" },
+        { label: "Devis & Factures", href: "/client/invoices" },
+        { label: "Détail", href: undefined },
+      ],
+      title: "Détails de la facture",
+      description: "Consultez les détails de votre facture ou devis",
+    }),
+  },
+  {
+    pattern: /^\/client\/invoices$/,
+    metadata: {
+      breadcrumbs: [
+        { label: "Dashboard", href: "/client" },
+        { label: "Devis & Factures", href: undefined },
+      ],
+      title: "Devis & Factures",
+      description: "Consultez tous vos devis et factures",
+    },
+  },
+  {
+    pattern: /^\/client\/documents$/,
+    metadata: {
+      breadcrumbs: [
+        { label: "Dashboard", href: "/client" },
+        { label: "Documents", href: undefined },
+      ],
+      title: "Mes documents",
+      description: "Gérez tous vos documents et fichiers",
+    },
+  },
+  {
+    pattern: /^\/client\/settings$/,
+    metadata: {
+      breadcrumbs: [
+        { label: "Dashboard", href: "/client" },
+        { label: "Paramètres", href: undefined },
+      ],
+      title: "Paramètres",
+      description: "Gérez vos préférences et votre profil",
     },
   },
   {
@@ -309,7 +355,9 @@ export function getPageMetadata(
   });
 
   const lastSegment = segments[segments.length - 1];
-  const title = labelMap[lastSegment] || lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1);
+  const title =
+    labelMap[lastSegment] ||
+    lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1);
 
   return {
     breadcrumbs,
@@ -317,4 +365,3 @@ export function getPageMetadata(
     description: `Page ${title}`,
   };
 }
-

@@ -9,7 +9,7 @@ export default function Page() {
 
   return (
     <ProtectedRoute requiredRole={Role.CLIENT}>
-      {typeof id === "string" && <ClientInvoiceDetail id={id} />}
+      <ClientInvoiceDetail id={id as string} />
     </ProtectedRoute>
   );
 }

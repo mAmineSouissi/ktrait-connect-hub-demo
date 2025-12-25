@@ -126,9 +126,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         id: 5,
-        title: "Facturation",
+        title: "Devis & Factures",
         icon: CreditCard,
-        url: "/client/billing",
+        url: "/client/invoices",
       },
       {
         id: 6,
