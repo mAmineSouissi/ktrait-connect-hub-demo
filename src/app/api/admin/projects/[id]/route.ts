@@ -13,6 +13,7 @@ import type {
   UserRow,
   ClientRow,
 } from "@/types/supabase-database.types";
+import { ProjectPartnerWithDetails } from "@/api/admin/project-partners";
 
 /**
  * Check if the current user is an admin
@@ -261,7 +262,7 @@ export async function PUT(
     } = body;
 
     // Build update object (only include provided fields)
-    const updateData: any = {};
+    const updateData: ProjectUpdate = {};
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (status !== undefined) updateData.status = status;

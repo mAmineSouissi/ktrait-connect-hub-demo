@@ -52,8 +52,11 @@ export async function GET(request: NextRequest) {
     const project_id = searchParams.get("project_id");
     const folder = searchParams.get("folder");
     const status = searchParams.get("status");
-    const limit = searchParams.get("limit") || "100";
-    const offset = searchParams.get("offset") || "0";
+    const search = searchParams.get("search");
+    const limit = parseInt(searchParams.get("limit") || "100");
+    const offset = parseInt(searchParams.get("offset") || "0");
+    const sortKey = searchParams.get("sortKey") || "uploaded_at";
+    const order = searchParams.get("order") || "desc";
 
     // Build query - only documents for this client's projects
     let query = typedTable("documents").select(
@@ -97,13 +100,17 @@ export async function GET(request: NextRequest) {
     }
     if (folder) query = query.eq("folder", folder);
     if (status) query = query.eq("status", status);
+    if (search) {
+      query = query.or(
+        `name.ilike.%${search}%,file_type.ilike.%${search}%,folder.ilike.%${search}%`
+      );
+    }
 
-    query = query.order("uploaded_at", { ascending: false });
+    // Apply sorting
+    const ascending = order === "asc" || order === "ASC";
+    query = query.order(sortKey, { ascending });
 
-    const { data, error, count } = await query.range(
-      Number(offset),
-      Number(offset) + Number(limit) - 1
-    );
+    const { data, error, count } = await query.range(offset, offset + limit - 1);
 
     if (error) {
       console.error("Error fetching documents:", error);
