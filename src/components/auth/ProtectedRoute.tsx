@@ -27,7 +27,6 @@ export function ProtectedRoute({
 
     setIsChecking(false);
 
-    // If not authenticated, redirect to home/login
     if (!isAuthenticated) {
       const loginPath = redirectTo || "/";
       router.push(loginPath);
@@ -45,7 +44,7 @@ export function ProtectedRoute({
         }
         // If rejected, redirect to login
         if (approvalStatus === "rejected") {
-          router.push("/login");
+          router.push("/");
           return;
         }
       }

@@ -1,5 +1,5 @@
-import { HomePage } from "@/components/Home";
+import { AuthenticationForm } from "@/components/auth/forms/AuthenticationForm";
 
 export default function Home() {
-  return <HomePage />;
+  return <AuthenticationForm />;
 }

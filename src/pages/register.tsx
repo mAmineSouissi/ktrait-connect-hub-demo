@@ -203,7 +203,7 @@ export default function RegisterPage() {
 
           <div className="mt-4 text-center text-sm">
             Vous avez déjà un compte ?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/" className="text-primary hover:underline">
               Se connecter
             </Link>
           </div>

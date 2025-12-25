@@ -127,7 +127,7 @@ export const AuthenticationForm = ({ className }: AuthenticationFormProps) => {
 
       const currentPath = router.pathname;
 
-      if (currentPath === "/login" || currentPath.includes("/login")) {
+      if (currentPath === "/" || currentPath.includes("/login")) {
         console.log("Already authenticated, redirecting to:", targetPath);
         router.replace(targetPath);
       }

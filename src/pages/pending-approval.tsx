@@ -31,22 +31,20 @@ export default function PendingApprovalPage() {
         return;
       }
 
-      // If user is rejected, redirect to login
       if (approvalStatus === "rejected") {
-        router.replace("/login");
+        router.replace("/");
         return;
       }
     }
 
-    // If no user and not loading, redirect to login
     if (!loading && !user) {
-      router.replace("/login");
+      router.replace("/");
     }
   }, [user, loading, router]);
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/login");
+    router.push("/");
   };
 
   if (loading) {

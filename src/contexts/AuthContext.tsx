@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
     setUser(null);
     setLoading(false);
-    router.replace("/login");
+    router.replace("/");
   }, [router]);
 
   React.useEffect(() => {
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (approvalStatus === "rejected") {
               await supabase.auth.signOut();
               setUser(null);
-              router.push("/login");
+              router.push("/");
             } else {
               // Pending status - redirect to pending approval page
               setUser(userData as User); // Set user so page can display info
@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (!userData.is_active) {
             await supabase.auth.signOut();
             setUser(null);
-            router.push("/login");
+            router.push("/");
             return;
           }
 
@@ -175,7 +175,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               if (approvalStatus === "rejected") {
                 await supabase.auth.signOut();
                 setUser(null);
-                router.push("/login");
+                router.push("/");
               } else {
                 // Pending status - redirect to pending approval page
                 setUser(userData as User); // Set user so page can display info
@@ -188,7 +188,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (!userData.is_active) {
               await supabase.auth.signOut();
               setUser(null);
-              router.push("/login");
+              router.push("/");
               return;
             }
 
