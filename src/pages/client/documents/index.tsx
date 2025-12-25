@@ -1,5 +1,5 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ClientDocuments } from "@/components/client/ClientDocuments";
+import { ClientDocuments } from "@/components/client/documents/ClientDocuments";
 import { Role } from "@/types";
 
 export default function Page() {

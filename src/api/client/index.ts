@@ -6,6 +6,7 @@ import { partners } from "./partners";
 import { gallery } from "./gallery";
 import { payments } from "./payments";
 import { invoices } from "./invoices";
+import { profile } from "./profile";
 
 export const client = {
   projects,
@@ -16,5 +17,6 @@ export const client = {
   gallery,
   payments,
   invoices,
+  profile,
 };
 

@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     const order = searchParams.get("order") || "desc";
 
     // Get projects first
-    let query = (supabaseAdmin.from("projects") as any).select("*", {
+    let query = supabaseAdmin.from("projects").select("*", {
       count: "exact",
     });
 

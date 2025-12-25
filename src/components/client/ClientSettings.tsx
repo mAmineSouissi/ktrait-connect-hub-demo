@@ -1,5 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, Lock, Bell } from "lucide-react";
+import { ClientProfileForm } from "./settings/ClientProfileForm";
+import { ClientSecurityForm } from "./settings/ClientSecurityForm";
 import {
   Card,
   CardContent,
@@ -7,10 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Lock, Bell } from "lucide-react";
 
 export const ClientSettings = () => {
   return (
@@ -37,78 +36,11 @@ export const ClientSettings = () => {
             </TabsList>
 
             <TabsContent value="profile" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informations personnelles</CardTitle>
-                  <CardDescription>
-                    Gérez vos informations de contact
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center gap-6">
-                    <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
-                      JD
-                    </div>
-                    <Button variant="outline">Changer la photo</Button>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label>Prénom</Label>
-                      <Input defaultValue="Jean" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Nom</Label>
-                      <Input defaultValue="Dupont" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input
-                        type="email"
-                        defaultValue="jean.dupont@email.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Téléphone</Label>
-                      <Input defaultValue="06 12 34 56 78" />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label>Adresse</Label>
-                      <Input defaultValue="123 Rue de Paris, 75001 Paris" />
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <Button>Enregistrer</Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <ClientProfileForm />
             </TabsContent>
 
             <TabsContent value="security" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Changer le mot de passe</CardTitle>
-                  <CardDescription>
-                    Assurez-vous d'utiliser un mot de passe fort
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label>Mot de passe actuel</Label>
-                    <Input type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Nouveau mot de passe</Label>
-                    <Input type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Confirmer le nouveau mot de passe</Label>
-                    <Input type="password" />
-                  </div>
-                  <div className="flex justify-end">
-                    <Button>Mettre à jour</Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <ClientSecurityForm />
 
               <Card>
                 <CardHeader>
@@ -125,8 +57,11 @@ export const ClientSettings = () => {
                         Recevez un code par SMS à chaque connexion
                       </p>
                     </div>
-                    <Switch />
+                    <Switch disabled />
                   </div>
+                  <p className="text-xs text-muted-foreground mt-2 underline">
+                    Cette fonctionnalité sera disponible prochainement
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>

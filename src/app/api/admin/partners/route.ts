@@ -209,18 +209,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Create auth user first
-    const { data: authUser, error: authError } = await (
-      (supabaseAdmin as any).auth.admin as any
-    ).createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        full_name,
-        phone: userPhone || phone || null,
-        role: "partner",
-      },
-    });
+    const { data: authUser, error: authError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name,
+          phone: userPhone || phone || null,
+          role: "partner",
+        },
+      });
 
     if (authError) {
       console.error("Error creating auth user:", authError);
@@ -251,7 +250,7 @@ export async function POST(request: NextRequest) {
     if (profileError || !userProfile) {
       console.error("Error fetching user profile:", profileError);
       // Try to clean up auth user
-      await (supabaseAdmin.auth.admin as any).deleteUser(authUser.user.id);
+      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
       return NextResponse.json(
         { error: "Failed to create user profile" },
         { status: 500 }
@@ -292,7 +291,7 @@ export async function POST(request: NextRequest) {
     if (partnerError || !partner) {
       console.error("Error creating partner:", partnerError);
       // Clean up auth user if partner creation fails
-      await (supabaseAdmin.auth.admin as any).deleteUser(authUser.user.id);
+      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
       return NextResponse.json(
         { error: partnerError?.message || "Failed to create partner" },
         { status: 500 }
