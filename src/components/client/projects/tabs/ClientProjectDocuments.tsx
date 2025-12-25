@@ -37,7 +37,8 @@ export const ClientProjectDocuments = ({
 }: ClientProjectDocumentsProps) => {
   const queryClient = useQueryClient();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const [selectedDocument, setSelectedDocument] = React.useState<DocumentWithDetails | null>(null);
+  const [selectedDocument, setSelectedDocument] =
+    React.useState<DocumentWithDetails | null>(null);
 
   // Fetch documents for this project
   const { data: projectDocuments, isLoading: isLoadingDocs } = useQuery({
@@ -54,8 +55,12 @@ export const ClientProjectDocuments = ({
   const createMutation = useMutation({
     mutationFn: api.client.documents.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client-documents", "project", projectId] });
-      queryClient.invalidateQueries({ queryKey: ["client-project", projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ["client-documents", "project", projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["client-project", projectId],
+      });
       closeCreateDocumentSheet();
       toast.success("Document créé avec succès");
     },
@@ -69,14 +74,20 @@ export const ClientProjectDocuments = ({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       api.client.documents.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client-documents", "project", projectId] });
-      queryClient.invalidateQueries({ queryKey: ["client-project", projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ["client-documents", "project", projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["client-project", projectId],
+      });
       closeUpdateDocumentSheet();
       setSelectedDocument(null);
       toast.success("Document modifié avec succès");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la modification du document");
+      toast.error(
+        error.message || "Erreur lors de la modification du document"
+      );
     },
   });
 
@@ -84,8 +95,12 @@ export const ClientProjectDocuments = ({
   const deleteMutation = useMutation({
     mutationFn: api.client.documents.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client-documents", "project", projectId] });
-      queryClient.invalidateQueries({ queryKey: ["client-project", projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ["client-documents", "project", projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["client-project", projectId],
+      });
       setIsDeleteDialogOpen(false);
       setSelectedDocument(null);
       toast.success("Document supprimé avec succès");
@@ -178,60 +193,66 @@ export const ClientProjectDocuments = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projectDocuments?.documents?.map((doc: DocumentWithDetails) => (
-                  <TableRow key={doc.id}>
-                    <TableCell className="font-medium">{doc.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{doc.file_type || "N/A"}</Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(doc.uploaded_at)}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          doc.status === "validé"
-                            ? "default"
-                            : doc.status === "rejeté"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                      >
-                        {documentStatusMap[doc.status] || doc.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {doc.file_url && (
+                {projectDocuments?.documents?.map(
+                  (doc: DocumentWithDetails) => (
+                    <TableRow key={doc.id}>
+                      <TableCell className="font-medium">{doc.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {doc.file_type || "N/A"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(doc.uploaded_at)}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            doc.status === "validé"
+                              ? "default"
+                              : doc.status === "rejeté"
+                              ? "destructive"
+                              : "secondary"
+                          }
+                        >
+                          {documentStatusMap[doc.status] || doc.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          {doc.file_url && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() =>
+                                window.open(doc.file_url || "", "_blank")
+                              }
+                              title="Télécharger"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => window.open(doc.file_url, "_blank")}
-                            title="Télécharger"
+                            onClick={() => openEditDialog(doc)}
+                            title="Modifier"
                           >
-                            <Download className="h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(doc)}
-                          title="Modifier"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive"
-                          onClick={() => openDeleteDialog(doc)}
-                          title="Supprimer"
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive"
+                            onClick={() => openDeleteDialog(doc)}
+                            title="Supprimer"
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
               </TableBody>
             </Table>
           )}

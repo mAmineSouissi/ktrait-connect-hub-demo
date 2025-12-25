@@ -100,7 +100,7 @@ const ClientDashboard = () => {
               variant="success"
             />
             <div
-              onClick={() => router.push("/client/billing")}
+              onClick={() => router.push("/client/invoices")}
               className="cursor-pointer"
             >
               <KPICard
@@ -192,7 +192,7 @@ const ClientDashboard = () => {
                     <div className="flex gap-2 mt-3">
                       <Button
                         size="sm"
-                        onClick={() => router.push("/client/billing")}
+                        onClick={() => router.push("/client/invoices")}
                       >
                         <FileText className="h-4 w-4 mr-1" />
                         Voir le devis
@@ -287,7 +287,7 @@ const ClientDashboard = () => {
                 <Button
                   variant="outline"
                   className="h-auto py-4 flex-col"
-                  onClick={() => router.push("/client/billing")}
+                  onClick={() => router.push("/client/invoices")}
                 >
                   <AlertCircle className="h-6 w-6 mb-2" />
                   Facturation

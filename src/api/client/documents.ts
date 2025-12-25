@@ -1,4 +1,4 @@
-import type { DocumentWithDetails } from "@/types/document.types";
+import type { Document, DocumentWithDetails } from "@/types/document.types";
 
 const API_BASE = "/api/client/documents";
 
@@ -17,7 +17,7 @@ export interface CreateDocumentRequest {
   file_type?: string;
   folder?: string;
   file_url?: string;
-  file_size?: number;
+  file_size?: string;
   status?: "en_attente" | "validé" | "rejeté";
 }
 
@@ -26,17 +26,17 @@ export interface UpdateDocumentRequest {
   file_type?: string;
   folder?: string;
   file_url?: string;
-  file_size?: number;
+  file_size?: string;
   status?: "en_attente" | "validé" | "rejeté";
 }
 
 export interface CreateDocumentResponse {
-  document: DocumentWithDetails;
+  document: Document;
   message?: string;
 }
 
 export interface UpdateDocumentResponse {
-  document: DocumentWithDetails;
+  document: Document;
   message?: string;
 }
 
@@ -47,21 +47,27 @@ export interface DeleteDocumentResponse {
 
 export const documents = {
   /**
-   * List documents for the current client's projects
+   * List documents for current client with filters and pagination
    */
   async list(params?: {
     project_id?: string;
     folder?: string;
     status?: string;
+    search?: string;
     limit?: number;
     offset?: number;
+    sortKey?: string;
+    order?: "asc" | "desc";
   }): Promise<DocumentListResponse> {
     const queryParams = new URLSearchParams();
     if (params?.project_id) queryParams.append("project_id", params.project_id);
     if (params?.folder) queryParams.append("folder", params.folder);
     if (params?.status) queryParams.append("status", params.status);
+    if (params?.search) queryParams.append("search", params.search);
     if (params?.limit) queryParams.append("limit", String(params.limit));
     if (params?.offset) queryParams.append("offset", String(params.offset));
+    if (params?.sortKey) queryParams.append("sortKey", params.sortKey);
+    if (params?.order) queryParams.append("order", params.order);
 
     const url = `${API_BASE}${
       queryParams.toString() ? `?${queryParams.toString()}` : ""
@@ -79,7 +85,7 @@ export const documents = {
   /**
    * Get document details by ID (for current client only)
    */
-  async getById(id: string): Promise<{ document: DocumentWithDetails }> {
+  async getById(id: string): Promise<{ document: Document }> {
     const response = await fetch(`${API_BASE}/${id}`);
 
     if (!response.ok) {
@@ -91,7 +97,7 @@ export const documents = {
   },
 
   /**
-   * Create a new document (client_id is automatically set)
+   * Create a new document (for current client's projects only)
    */
   async create(data: CreateDocumentRequest): Promise<CreateDocumentResponse> {
     const response = await fetch(API_BASE, {
@@ -149,4 +155,3 @@ export const documents = {
     return response.json();
   },
 };
-
