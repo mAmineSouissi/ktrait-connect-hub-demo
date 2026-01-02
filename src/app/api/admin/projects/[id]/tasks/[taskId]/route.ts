@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { typedTable, typedUpdate } from "@/lib/supabase/typed-client";
+import { typedTable } from "@/lib/supabase/typed-client";
 import { createAppRouteClient } from "@/lib/supabase/app-route-client";
-import type { ProjectTaskRow, ProjectTaskUpdate } from "@/types/supabase-database.types";
+import type {
+  ProjectTaskRow,
+  ProjectTaskUpdate,
+} from "@/types/supabase-database.types";
 
 /**
  * Check if the current user is an admin
@@ -119,15 +122,17 @@ export async function PUT(
     };
 
     if (taskError || !task) {
-      return NextResponse.json(
-        { error: "Task not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    const result = await typedUpdate("project_tasks", taskId, updateData);
+    // Update the task and return the updated data
+    const updateResult = await typedTable("project_tasks")
+      .update(updateData)
+      .eq("id", taskId)
+      .select()
+      .single();
 
-    const { data: updatedTask, error } = result as {
+    const { data: updatedTask, error } = updateResult as {
       data: ProjectTaskRow | null;
       error: any;
     };
@@ -135,6 +140,13 @@ export async function PUT(
     if (error) {
       console.error("Error updating task:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    if (!updatedTask) {
+      return NextResponse.json(
+        { error: "Task not found after update" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ task: updatedTask });
@@ -186,10 +198,7 @@ export async function DELETE(
     };
 
     if (taskError || !task) {
-      return NextResponse.json(
-        { error: "Task not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
     const result = await typedTable("project_tasks")
@@ -217,4 +226,3 @@ export async function DELETE(
     );
   }
 }
-
