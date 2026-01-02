@@ -64,14 +64,7 @@ export const ProjectPartners = ({ projectId }: ProjectPartnersProps) => {
   // Fetch all available partners for selection
   const { data: allPartnersData } = useQuery({
     queryKey: ["partners", "all"],
-    queryFn: async () => {
-      const response = await fetch("/api/admin/partners?limit=1000");
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to fetch partners");
-      }
-      return response.json();
-    },
+    queryFn: () => api.admin.partners.list({ limit: 1000 }),
   });
 
   // Add partner mutation
