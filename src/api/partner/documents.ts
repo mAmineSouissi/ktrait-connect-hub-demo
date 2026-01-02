@@ -1,0 +1,163 @@
+/**
+ * Client-side API functions for partner document management
+ */
+
+import type { Document, DocumentWithDetails } from "@/types/document.types";
+
+const API_BASE = "/api/partner/documents";
+
+export interface PartnerDocumentListResponse {
+  documents: DocumentWithDetails[];
+  total: number;
+}
+
+export interface CreatePartnerDocumentRequest {
+  project_id: string;
+  name: string;
+  file_type?: string;
+  folder?: string;
+  file_url?: string;
+  file_size?: string;
+  status?: "en_attente" | "validé" | "rejeté";
+}
+
+export interface UpdatePartnerDocumentRequest {
+  name?: string;
+  file_type?: string;
+  folder?: string;
+  file_url?: string;
+  file_size?: string;
+  status?: "en_attente" | "validé" | "rejeté";
+}
+
+export interface CreatePartnerDocumentResponse {
+  document: Document;
+  message?: string;
+}
+
+export interface UpdatePartnerDocumentResponse {
+  document: Document;
+  message?: string;
+}
+
+export interface DeletePartnerDocumentResponse {
+  message: string;
+  deleted: boolean;
+}
+
+export const documents = {
+  /**
+   * List all documents from projects assigned to current partner
+   */
+  async list(params?: {
+    project_id?: string;
+    client_id?: string;
+    folder?: string;
+    status?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+    sortKey?: string;
+    order?: "asc" | "desc";
+  }): Promise<PartnerDocumentListResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.project_id) queryParams.append("project_id", params.project_id);
+    if (params?.client_id) queryParams.append("client_id", params.client_id);
+    if (params?.folder) queryParams.append("folder", params.folder);
+    if (params?.status) queryParams.append("status", params.status);
+    if (params?.search) queryParams.append("search", params.search);
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    if (params?.offset) queryParams.append("offset", String(params.offset));
+    if (params?.sortKey) queryParams.append("sortKey", params.sortKey);
+    if (params?.order) queryParams.append("order", params.order);
+
+    const url = `${API_BASE}${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to fetch documents");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Get document details by ID
+   */
+  async getById(id: string): Promise<{ document: Document }> {
+    const response = await fetch(`${API_BASE}/${id}`);
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to fetch document");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Create a new document for an assigned project
+   */
+  async create(
+    data: CreatePartnerDocumentRequest
+  ): Promise<CreatePartnerDocumentResponse> {
+    const response = await fetch(API_BASE, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to create document");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Update document by ID
+   */
+  async update(
+    id: string,
+    data: UpdatePartnerDocumentRequest
+  ): Promise<UpdatePartnerDocumentResponse> {
+    const response = await fetch(`${API_BASE}/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to update document");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Delete document by ID (only if partner created it)
+   */
+  async delete(id: string): Promise<DeletePartnerDocumentResponse> {
+    const response = await fetch(`${API_BASE}/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to delete document");
+    }
+
+    return response.json();
+  },
+};
+
+
