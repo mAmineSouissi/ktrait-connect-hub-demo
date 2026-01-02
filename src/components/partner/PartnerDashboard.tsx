@@ -18,6 +18,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api";
+import { formatDate } from "@/lib/date.util";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 import { toast } from "sonner";
 import { useRouter } from "next/router";
@@ -25,26 +30,33 @@ import { useRouter } from "next/router";
 const PartnerDashboard = () => {
   const router = useRouter();
 
-  const tasks = [
-    {
-      id: 1,
-      task: "Plans architecturaux - Villa Dakar",
-      deadline: "2 jours",
-      priority: "high",
-    },
-    {
-      id: 2,
-      task: "Validation technique - Immeuble R+5",
-      deadline: "5 jours",
-      priority: "medium",
-    },
-    {
-      id: 3,
-      task: "Relevé de mesures - Centre Commercial",
-      deadline: "1 semaine",
-      priority: "low",
-    },
-  ];
+  // Fetch tasks
+  const { data: tasksData, isLoading: tasksLoading } = useQuery({
+    queryKey: ["partner-dashboard-tasks"],
+    queryFn: () => api.partner.tasks.list({ limit: 10 }),
+  });
+
+  const allTasks = tasksData?.tasks || [];
+
+  // Calculate statistics
+  const stats = {
+    total: allTasks.length,
+    en_cours: allTasks.filter((t) => t.status === "en_cours").length,
+    terminé: allTasks.filter((t) => t.status === "terminé").length,
+    urgentes: allTasks.filter(
+      (t) => t.priority === "urgente" && t.status !== "terminé"
+    ).length,
+  };
+
+  // Get recent tasks (not completed, sorted by due_date)
+  const recentTasks = allTasks
+    .filter((t) => t.status !== "terminé")
+    .sort((a, b) => {
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    })
+    .slice(0, 3);
 
   const projects = [
     {
@@ -85,13 +97,6 @@ const PartnerDashboard = () => {
     <div className="flex min-h-screen w-full">
       <div className="flex-1">
         <main className="p-6 space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Dashboard Partenaire</h1>
-            <p className="text-muted-foreground">
-              Gérez vos projets et tâches assignées
-            </p>
-          </div>
-
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div
               onClick={() => router.push("/partner/projects")}
@@ -110,14 +115,14 @@ const PartnerDashboard = () => {
             >
               <KPICard
                 title="Tâches en Cours"
-                value="15"
+                value={tasksLoading ? "..." : stats.en_cours.toString()}
                 icon={Clock}
                 variant="warning"
               />
             </div>
             <KPICard
               title="Tâches Terminées"
-              value="42"
+              value={tasksLoading ? "..." : stats.terminé.toString()}
               icon={CheckSquare}
               variant="success"
             />
@@ -127,7 +132,7 @@ const PartnerDashboard = () => {
             >
               <KPICard
                 title="Urgentes"
-                value="3"
+                value={tasksLoading ? "..." : stats.urgentes.toString()}
                 icon={AlertCircle}
                 variant="default"
               />
@@ -147,35 +152,77 @@ const PartnerDashboard = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {tasks.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer"
-                    onClick={() => router.push("/partner/tasks")}
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{item.task}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Dans {item.deadline}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
-                        item.priority === "high"
-                          ? "destructive"
-                          : item.priority === "medium"
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {item.priority === "high"
-                        ? "Urgent"
-                        : item.priority === "medium"
-                        ? "Moyen"
-                        : "Normal"}
-                    </Badge>
+                {tasksLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   </div>
-                ))}
+                ) : recentTasks.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Aucune tâche en cours
+                  </p>
+                ) : (
+                  recentTasks.map((task) => {
+                    const isOverdue =
+                      task.due_date && new Date(task.due_date) < new Date();
+                    const priorityVariant =
+                      task.priority === "urgente"
+                        ? "destructive"
+                        : task.priority === "élevée"
+                        ? "default"
+                        : "secondary";
+
+                    return (
+                      <div
+                        key={task.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer"
+                        onClick={() => {
+                          if (task.project?.id) {
+                            router.push(`/partner/projects/${task.project.id}`);
+                          } else {
+                            router.push("/partner/tasks");
+                          }
+                        }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {task.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {task.due_date && (
+                              <p
+                                className={cn(
+                                  "text-xs text-muted-foreground",
+                                  isOverdue && "text-destructive font-medium"
+                                )}
+                              >
+                                {isOverdue
+                                  ? "En retard"
+                                  : `Échéance: ${formatDate(task.due_date)}`}
+                              </p>
+                            )}
+                            {task.project && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                • {task.project.name}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge
+                          variant={priorityVariant}
+                          className="ml-2 shrink-0"
+                        >
+                          {task.priority === "urgente"
+                            ? "Urgent"
+                            : task.priority === "élevée"
+                            ? "Élevée"
+                            : task.priority === "moyenne"
+                            ? "Moyenne"
+                            : "Faible"}
+                        </Badge>
+                      </div>
+                    );
+                  })
+                )}
                 <Button
                   className="w-full"
                   variant="outline"
