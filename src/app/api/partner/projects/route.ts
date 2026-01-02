@@ -108,9 +108,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter in JavaScript since we can't filter nested fields directly
-    let filteredProjects = (allProjectPartners || [])
-      .filter((pp) => pp.project !== null)
-      .map((pp) => ({
+    type ProjectPartnerWithProject = ProjectPartnerRow & {
+      project: (ProjectRow & {
+        client: { id: string; full_name: string; email: string } | null;
+      }) | null;
+    };
+
+    let filteredProjects = ((allProjectPartners || []) as ProjectPartnerWithProject[])
+      .filter((pp: ProjectPartnerWithProject) => pp.project !== null)
+      .map((pp: ProjectPartnerWithProject) => ({
         ...pp,
         project: pp.project!,
       }));
