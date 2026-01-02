@@ -78,7 +78,7 @@ export const ClientDocumentUpdateForm: React.FC<ClientDocumentUpdateFormProps> =
   // File upload handler
   const uploadFileToStorage = async (
     file: File
-  ): Promise<{ file_url: string; file_size: number }> => {
+  ): Promise<{ file_url: string; file_size: string }> => {
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random()
@@ -113,7 +113,7 @@ export const ClientDocumentUpdateForm: React.FC<ClientDocumentUpdateFormProps> =
 
       return {
         file_url: publicUrl,
-        file_size: file.size,
+        file_size: formatFileSize(file.size),
       };
     } catch (error: any) {
       console.error("Upload error:", error);

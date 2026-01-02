@@ -199,9 +199,7 @@ export const PartnerTaskCreateForm: React.FC<PartnerTaskCreateFormProps> = ({
           <Label htmlFor="status">Statut</Label>
           <Select
             value={formData.status}
-            onValueChange={(value) =>
-              handleChange("status", value as CreatePartnerTaskRequest["status"])
-            }
+            onValueChange={(value) => handleChange("status", value)}
             disabled={isPending}
           >
             <SelectTrigger>
@@ -220,12 +218,7 @@ export const PartnerTaskCreateForm: React.FC<PartnerTaskCreateFormProps> = ({
           <Label htmlFor="priority">Priorité</Label>
           <Select
             value={formData.priority}
-            onValueChange={(value) =>
-              handleChange(
-                "priority",
-                value as CreatePartnerTaskRequest["priority"]
-              )
-            }
+            onValueChange={(value) => handleChange("priority", value)}
             disabled={isPending}
           >
             <SelectTrigger>
@@ -284,7 +277,7 @@ export const PartnerTaskCreateForm: React.FC<PartnerTaskCreateFormProps> = ({
           min={0}
           max={100}
           step={1}
-          value={[formData.progress]}
+          value={[formData.progress ?? 0]}
           onValueChange={([value]) => handleChange("progress", value)}
           disabled={isPending}
         />

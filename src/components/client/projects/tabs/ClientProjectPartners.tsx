@@ -101,7 +101,10 @@ export const ClientProjectPartners = ({
     }: {
       partnerId: string;
       data: { role?: string | null; is_primary?: boolean };
-    }) => api.client.projects.updatePartner(projectId, partnerId, data),
+    }) => api.client.projects.updatePartner(projectId, partnerId, {
+      ...data,
+      role: data.role ?? undefined,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["client-project-partners", "project", projectId],

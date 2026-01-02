@@ -442,9 +442,7 @@ export const PartnerDocumentCreateForm: React.FC<PartnerDocumentCreateFormProps>
         <Label htmlFor="status">Statut</Label>
         <Select
           value={formData.status}
-          onValueChange={(value) =>
-            handleChange("status", value as CreatePartnerDocumentRequest["status"])
-          }
+          onValueChange={(value) => handleChange("status", value)}
           disabled={isCreatePending || isUploading}
         >
           <SelectTrigger>

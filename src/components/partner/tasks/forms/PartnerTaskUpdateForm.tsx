@@ -200,9 +200,7 @@ export const PartnerTaskUpdateForm: React.FC<PartnerTaskUpdateFormProps> = ({
           <Label htmlFor="status">Statut</Label>
           <Select
             value={formData.status || "à_faire"}
-            onValueChange={(value) => {
-              handleChange("status", value as UpdatePartnerTaskRequest["status"]);
-            }}
+            onValueChange={(value) => handleChange("status", value)}
             disabled={isPending}
           >
             <SelectTrigger>
@@ -221,12 +219,7 @@ export const PartnerTaskUpdateForm: React.FC<PartnerTaskUpdateFormProps> = ({
           <Label htmlFor="priority">Priorité</Label>
           <Select
             value={formData.priority}
-            onValueChange={(value) =>
-              handleChange(
-                "priority",
-                value as UpdatePartnerTaskRequest["priority"]
-              )
-            }
+            onValueChange={(value) => handleChange("priority", value)}
             disabled={isPending}
           >
             <SelectTrigger>
