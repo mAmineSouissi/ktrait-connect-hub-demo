@@ -166,7 +166,20 @@ export const ProjectPayments = ({ projectId }: ProjectPaymentsProps) => {
     isCreatePending: createPaymentMutation.isPending,
     resetPayment: () => {},
     projects: projectData ? [projectData] : [],
-    clients: projectData?.client ? [{ id: projectData.client.id, full_name: projectData.client.full_name || "", email: projectData.client.email || "" }] : [],
+    clients: projectData?.client
+      ? [
+          {
+            id: projectData.client.id,
+            full_name: projectData.client.full_name || "",
+            email: projectData.client.email || "",
+            is_active: true,
+            email_verified: true,
+            role: "client" as const,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ]
+      : [],
     defaultProjectId: projectId,
     defaultClientId: projectData?.client?.id,
   });
@@ -181,7 +194,20 @@ export const ProjectPayments = ({ projectId }: ProjectPaymentsProps) => {
     resetPayment: () => setSelectedPayment(null),
     payment: selectedPayment,
     projects: projectData ? [projectData] : [],
-    clients: projectData?.client ? [{ id: projectData.client.id, full_name: projectData.client.full_name || "", email: projectData.client.email || "" }] : [],
+    clients: projectData?.client
+      ? [
+          {
+            id: projectData.client.id,
+            full_name: projectData.client.full_name || "",
+            email: projectData.client.email || "",
+            is_active: true,
+            email_verified: true,
+            role: "client" as const,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ]
+      : [],
   });
 
   const payments = projectPayments?.payments || [];
