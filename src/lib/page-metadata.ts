@@ -265,6 +265,28 @@ export const pageMetadataConfig: RouteMetadataConfig[] = [
     },
   },
   {
+    pattern: /^\/partner\/tasks$/,
+    metadata: {
+      breadcrumbs: [
+        { label: "Dashboard", href: "/partner" },
+        { label: "Tâches", href: undefined },
+      ],
+      title: "Mes Tâches",
+      description: "Gérez vos tâches et suivez votre progression sur tous vos projets",
+    },
+  },
+  {
+    pattern: /^\/partner\/documents$/,
+    metadata: {
+      breadcrumbs: [
+        { label: "Dashboard", href: "/partner" },
+        { label: "Documents", href: undefined },
+      ],
+      title: "Documents",
+      description: "Gérez vos documents et fichiers de projet",
+    },
+  },
+  {
     pattern: /^\/partner$/,
     metadata: {
       breadcrumbs: [{ label: "Dashboard", href: undefined }],

@@ -16,6 +16,9 @@ import type {
   ProjectPartnerRow,
   ProjectPartnerInsert,
   ProjectPartnerUpdate,
+  ProjectTaskRow,
+  ProjectTaskInsert,
+  ProjectTaskUpdate,
 } from "./projects.types";
 import type {
   PartnerRow,
@@ -115,6 +118,11 @@ export interface Database {
         Row: ProjectPartnerRow;
         Insert: ProjectPartnerInsert;
         Update: ProjectPartnerUpdate;
+      };
+      project_tasks: {
+        Row: ProjectTaskRow;
+        Insert: ProjectTaskInsert;
+        Update: ProjectTaskUpdate;
       };
       partners: {
         Row: PartnerRow;

@@ -124,3 +124,56 @@ export interface ProjectPartnerUpdate {
   role?: string | null;
   is_primary?: boolean;
 }
+
+// ==================== PROJECT TASKS ====================
+export type TaskStatus = "à_faire" | "en_cours" | "terminé" | "bloqué";
+export type TaskPriority = "faible" | "moyenne" | "élevée" | "urgente";
+
+export interface ProjectTaskRow {
+  id: string;
+  project_id: string;
+  name: string;
+  description?: string | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assigned_to?: string | null;
+  due_date?: string | null;
+  start_date?: string | null;
+  completed_at?: string | null;
+  progress: number;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectTaskInsert {
+  id?: string;
+  project_id: string;
+  name: string;
+  description?: string | null;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  assigned_to?: string | null;
+  due_date?: string | null;
+  start_date?: string | null;
+  completed_at?: string | null;
+  progress?: number;
+  order_index?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ProjectTaskUpdate {
+  project_id?: string;
+  name?: string;
+  description?: string | null;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  assigned_to?: string | null;
+  due_date?: string | null;
+  start_date?: string | null;
+  completed_at?: string | null;
+  progress?: number;
+  order_index?: number;
+  updated_at?: string;
+}

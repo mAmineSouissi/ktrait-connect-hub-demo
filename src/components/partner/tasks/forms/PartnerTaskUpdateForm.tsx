@@ -1,0 +1,303 @@
+"use client";
+
+import React, { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { UpdatePartnerTaskRequest, PartnerTask } from "@/api/partner/projects";
+import { formatDateForInput } from "@/lib/date.util";
+
+interface PartnerTaskUpdateFormProps {
+  className?: string;
+  onSubmit?: (data: UpdatePartnerTaskRequest) => void;
+  isPending?: boolean;
+  task?: PartnerTask | null;
+}
+
+export const PartnerTaskUpdateForm: React.FC<PartnerTaskUpdateFormProps> = ({
+  className,
+  onSubmit,
+  isPending = false,
+  task,
+}) => {
+  const [formData, setFormData] = React.useState<UpdatePartnerTaskRequest>({
+    name: "",
+    description: null,
+    status: "à_faire",
+    priority: "moyenne",
+    assigned_to: null,
+    due_date: null,
+    start_date: null,
+    progress: 0,
+    order_index: 0,
+  });
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        name: task.name,
+        description: task.description || null,
+        status: task.status,
+        priority: task.priority,
+        assigned_to: task.assigned_to || null,
+        due_date: task.due_date ? formatDateForInput(task.due_date) : null,
+        start_date: task.start_date ? formatDateForInput(task.start_date) : null,
+        progress: task.progress,
+        order_index: task.order_index,
+      });
+    }
+  }, [task]);
+
+  const validateDates = (
+    startDate: string | null | undefined,
+    dueDate: string | null | undefined
+  ): string | null => {
+    if (!startDate || !dueDate) {
+      return null; // Both dates are optional, so no error if one is missing
+    }
+
+    const start = new Date(startDate);
+    const due = new Date(dueDate);
+
+    if (start > due) {
+      return "La date de début ne peut pas être postérieure à la date d'échéance";
+    }
+
+    return null;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const newErrors: Record<string, string> = {};
+    if (formData.name !== undefined && !formData.name.trim()) {
+      newErrors.name = "Le nom de la tâche est requis";
+    }
+
+    // Validate dates
+    const dateError = validateDates(formData.start_date, formData.due_date);
+    if (dateError) {
+      newErrors.start_date = dateError;
+      newErrors.due_date = dateError;
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Ensure all fields are included in the submission, especially status
+    const submitData: UpdatePartnerTaskRequest = {
+      name: formData.name || task?.name,
+      description: formData.description,
+      status: formData.status || task?.status || "à_faire",
+      priority: formData.priority || task?.priority || "moyenne",
+      assigned_to: formData.assigned_to,
+      due_date: formData.due_date,
+      start_date: formData.start_date,
+      progress: formData.progress ?? task?.progress ?? 0,
+      order_index: formData.order_index ?? task?.order_index ?? 0,
+    };
+
+    onSubmit?.(submitData);
+  };
+
+  const handleChange = (
+    field: keyof UpdatePartnerTaskRequest,
+    value: string | number | null
+  ) => {
+    const updatedFormData = { ...formData, [field]: value };
+    setFormData(updatedFormData);
+
+    // Clear field-specific error
+    if (errors[field as string]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field as string];
+        return newErrors;
+      });
+    }
+
+    // Validate dates when either date field changes
+    if (field === "start_date" || field === "due_date") {
+      const dateError = validateDates(
+        field === "start_date" ? (value as string) : updatedFormData.start_date,
+        field === "due_date" ? (value as string) : updatedFormData.due_date
+      );
+
+      if (dateError) {
+        setErrors((prev) => ({
+          ...prev,
+          start_date: dateError,
+          due_date: dateError,
+        }));
+      } else {
+        // Clear date errors if validation passes
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.start_date;
+          delete newErrors.due_date;
+          return newErrors;
+        });
+      }
+    }
+  };
+
+  if (!task) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        Aucune tâche sélectionnée
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={cn("space-y-4", className)}>
+      <div className="space-y-2">
+        <Label htmlFor="name">
+          Nom de la tâche <span className="text-destructive">*</span>
+        </Label>
+        <Input
+          id="name"
+          placeholder="Ex: Finaliser les plans"
+          value={formData.name || ""}
+          onChange={(e) => handleChange("name", e.target.value)}
+          required
+          disabled={isPending}
+          className={errors.name ? "border-destructive" : ""}
+        />
+        {errors.name && (
+          <p className="text-sm text-destructive">{errors.name}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          placeholder="Description de la tâche..."
+          value={formData.description || ""}
+          onChange={(e) => handleChange("description", e.target.value || null)}
+          disabled={isPending}
+          rows={3}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="status">Statut</Label>
+          <Select
+            value={formData.status || "à_faire"}
+            onValueChange={(value) => {
+              handleChange("status", value as UpdatePartnerTaskRequest["status"]);
+            }}
+            disabled={isPending}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner un statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="à_faire">À faire</SelectItem>
+              <SelectItem value="en_cours">En cours</SelectItem>
+              <SelectItem value="bloqué">Bloqué</SelectItem>
+              <SelectItem value="terminé">Terminé</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="priority">Priorité</Label>
+          <Select
+            value={formData.priority}
+            onValueChange={(value) =>
+              handleChange(
+                "priority",
+                value as UpdatePartnerTaskRequest["priority"]
+              )
+            }
+            disabled={isPending}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="faible">Faible</SelectItem>
+              <SelectItem value="moyenne">Moyenne</SelectItem>
+              <SelectItem value="élevée">Élevée</SelectItem>
+              <SelectItem value="urgente">Urgente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="start_date">Date de début</Label>
+          <Input
+            id="start_date"
+            type="date"
+            value={formData.start_date || ""}
+            onChange={(e) => handleChange("start_date", e.target.value || null)}
+            disabled={isPending}
+            className={errors.start_date ? "border-destructive" : ""}
+            max={formData.due_date || undefined}
+          />
+          {errors.start_date && (
+            <p className="text-sm text-destructive">{errors.start_date}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="due_date">Date d'échéance</Label>
+          <Input
+            id="due_date"
+            type="date"
+            value={formData.due_date || ""}
+            onChange={(e) => handleChange("due_date", e.target.value || null)}
+            disabled={isPending}
+            className={errors.due_date ? "border-destructive" : ""}
+            min={formData.start_date || undefined}
+          />
+          {errors.due_date && (
+            <p className="text-sm text-destructive">{errors.due_date}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="progress">
+          Progression: {formData.progress || 0}%
+        </Label>
+        <Slider
+          id="progress"
+          min={0}
+          max={100}
+          step={1}
+          value={[formData.progress || 0]}
+          onValueChange={([value]) => handleChange("progress", value)}
+          disabled={isPending}
+        />
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="submit" disabled={isPending}>
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Mettre à jour
+        </Button>
+      </div>
+    </form>
+  );
+};
+
