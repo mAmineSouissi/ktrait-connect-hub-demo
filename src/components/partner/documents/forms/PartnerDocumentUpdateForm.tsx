@@ -288,7 +288,7 @@ export const PartnerDocumentUpdateForm: React.FC<PartnerDocumentUpdateFormProps>
         <Label htmlFor="folder">Dossier</Label>
         <Select
           value={formData.folder || ""}
-          onValueChange={(value) => handleChange("folder", value || undefined)}
+          onValueChange={(value) => handleChange("folder", value)}
           disabled={isUpdatePending || isUploading}
         >
           <SelectTrigger>
