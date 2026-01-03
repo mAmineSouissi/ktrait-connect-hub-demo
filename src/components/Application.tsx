@@ -29,15 +29,15 @@ function AppContent({
   Component: AppProps["Component"];
   pageProps: AppProps["pageProps"];
 }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Chargement...</div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <div className="text-lg">Chargement...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className={cn(`flex flex-col min-h-screen w-full`, className)}>
