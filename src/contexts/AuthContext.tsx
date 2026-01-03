@@ -34,9 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const setUserWithLoading = React.useCallback((user: User | null) => {
     setUser(user);
-    if (user) {
-      setLoading(false);
-    }
+    setLoading(false);
   }, []);
 
   const signIn = React.useCallback(
@@ -97,6 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (userError) {
           console.error("Error fetching user profile:", userError);
           setUser(null);
+          setLoading(false);
         } else if (userData) {
           // Check approval status (admin users are always approved)
           const approvalStatus = userData.approval_status || "pending";
@@ -105,10 +104,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (approvalStatus === "rejected") {
               await supabase.auth.signOut();
               setUser(null);
+              setLoading(false);
               router.push("/");
             } else {
               // Pending status - redirect to pending approval page
               setUser(userData as User); // Set user so page can display info
+              setLoading(false);
               router.push("/pending-approval");
             }
             return;
@@ -118,11 +119,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (!userData.is_active) {
             await supabase.auth.signOut();
             setUser(null);
+            setLoading(false);
             router.push("/");
             return;
           }
 
           setUser(userData as User);
+          setLoading(false);
+        } else {
+          setLoading(false);
         }
       } catch (error) {
         console.error("Unexpected error fetching user:", error);
@@ -167,6 +172,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               userError
             );
             setUser(null);
+            setLoading(false);
           } else if (userData) {
             // Check approval status (admin users are always approved)
             const approvalStatus = userData.approval_status || "pending";
@@ -175,10 +181,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               if (approvalStatus === "rejected") {
                 await supabase.auth.signOut();
                 setUser(null);
+                setLoading(false);
                 router.push("/");
               } else {
                 // Pending status - redirect to pending approval page
                 setUser(userData as User); // Set user so page can display info
+                setLoading(false);
                 router.push("/pending-approval");
               }
               return;
@@ -188,13 +196,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (!userData.is_active) {
               await supabase.auth.signOut();
               setUser(null);
+              setLoading(false);
               router.push("/");
               return;
             }
 
             setUser(userData as User);
+            setLoading(false);
+          } else {
+            setLoading(false);
           }
-          setLoading(false);
         } catch (error) {
           console.error("Error in auth state change handler:", error);
           setUser(null);
