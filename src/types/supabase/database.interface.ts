@@ -36,6 +36,9 @@ import type {
   PartnerGalleryRow,
   PartnerGalleryInsert,
   PartnerGalleryUpdate,
+  PartnerTestimonialRow,
+  PartnerTestimonialInsert,
+  PartnerTestimonialUpdate,
 } from "./partners.types";
 import type {
   DocumentRow,
@@ -168,6 +171,11 @@ export interface Database {
         Row: PartnerGalleryRow;
         Insert: PartnerGalleryInsert;
         Update: PartnerGalleryUpdate;
+      };
+      partner_testimonials: {
+        Row: PartnerTestimonialRow;
+        Insert: PartnerTestimonialInsert;
+        Update: PartnerTestimonialUpdate;
       };
       chantiers: {
         Row: ChantierRow;

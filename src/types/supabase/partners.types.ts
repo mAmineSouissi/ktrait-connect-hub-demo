@@ -204,3 +204,38 @@ export interface PartnerGalleryUpdate {
   order_index?: number;
   updated_at?: string;
 }
+
+// ==================== PARTNER TESTIMONIALS ====================
+export interface PartnerTestimonialRow {
+  id: string;
+  partner_id: string;
+  client_name: string;
+  project_name: string;
+  text: string;
+  rating: number;
+  date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PartnerTestimonialInsert {
+  id?: string;
+  partner_id: string;
+  client_name: string;
+  project_name: string;
+  text: string;
+  rating?: number;
+  date?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PartnerTestimonialUpdate {
+  partner_id?: string;
+  client_name?: string;
+  project_name?: string;
+  text?: string;
+  rating?: number;
+  date?: string;
+  updated_at?: string;
+}
