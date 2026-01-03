@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,8 +21,16 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetDescription,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Building,
   User,
@@ -28,7 +38,7 @@ import {
   Award,
   Plus,
   Star,
-  Image,
+  Image as ImageIcon,
   FolderOpen,
   Quote,
   Trash2,
@@ -36,226 +46,521 @@ import {
   Calendar,
   MapPin,
   X,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-
-interface Testimonial {
-  id: number;
-  clientName: string;
-  projectName: string;
-  text: string;
-  rating: number;
-  date: string;
-}
-
-interface PortfolioProject {
-  id: number;
-  title: string;
-  description: string;
-  location: string;
-  year: string;
-  images: string[];
-  category: string;
-}
-
-interface Certification {
-  id: number;
-  name: string;
-  number: string;
-  year: string;
-  status: string;
-}
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/api";
+import { supabase } from "@/lib/supabase/client";
+import type {
+  PortfolioProject,
+  Testimonial,
+  Certification,
+  PortfolioGalleryItem,
+  PartnerProfile,
+} from "@/api/partner/settings";
 
 export default function PartnerSettings() {
-  // Testimonials state
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([
-    {
-      id: 1,
-      clientName: "Jean Dupont",
-      projectName: "Villa Moderne",
-      text: "Excellent travail, très professionnel. Je recommande vivement.",
-      rating: 5,
-      date: "2024-03",
-    },
-    {
-      id: 2,
-      clientName: "Marie Martin",
-      projectName: "Rénovation Appartement",
-      text: "Très satisfait du résultat final, respect des délais.",
-      rating: 4,
-      date: "2024-01",
-    },
-  ]);
+  const queryClient = useQueryClient();
+
+  // Dialog states
   const [isAddTestimonialOpen, setIsAddTestimonialOpen] = useState(false);
+  const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
+  const [isAddPhotoOpen, setIsAddPhotoOpen] = useState(false);
+  const [isAddCertificationOpen, setIsAddCertificationOpen] = useState(false);
+  const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<PortfolioProject | null>(
+    null
+  );
+
+  // Form states
   const [testimonialForm, setTestimonialForm] = useState({
-    clientName: "",
-    projectName: "",
+    client_name: "",
+    project_name: "",
     text: "",
     rating: 5,
   });
 
-  // Portfolio projects state
-  const [portfolioProjects, setPortfolioProjects] = useState<
-    PortfolioProject[]
-  >([
-    {
-      id: 1,
-      title: "Villa Contemporaine",
-      description: "Construction d'une villa de 200m² avec piscine",
-      location: "Nice",
-      year: "2024",
-      images: ["/placeholder.svg"],
-      category: "Résidentiel",
-    },
-    {
-      id: 2,
-      title: "Bureaux Tech",
-      description: "Aménagement de bureaux pour une startup",
-      location: "Paris",
-      year: "2023",
-      images: ["/placeholder.svg", "/placeholder.svg"],
-      category: "Commercial",
-    },
-  ]);
-  const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
   const [projectForm, setProjectForm] = useState({
-    title: "",
+    name: "",
     description: "",
     location: "",
     year: "",
     category: "",
+    image_url: "",
   });
 
-  // Certifications state
-  const [certifications, setCertifications] = useState<Certification[]>([
-    {
-      id: 1,
-      name: "Ordre des Architectes",
-      number: "12345",
-      year: "2015",
-      status: "Valide",
-    },
-    {
-      id: 2,
-      name: "HQE - Haute Qualité Environnementale",
-      number: "HQE-2020-456",
-      year: "2020",
-      status: "Valide",
-    },
-    {
-      id: 3,
-      name: "BIM Manager Certifié",
-      number: "BIM-2022-789",
-      year: "2022",
-      status: "Valide",
-    },
-  ]);
-  const [isAddCertificationOpen, setIsAddCertificationOpen] = useState(false);
   const [certificationForm, setCertificationForm] = useState({
     name: "",
     number: "",
-    year: "",
+    issuing_organization: "",
+    issue_date: "",
+    expiry_date: "",
+    certificate_url: "",
   });
 
-  // Photo gallery state
-  const [photos, setPhotos] = useState<string[]>([
-    "/placeholder.svg",
-    "/placeholder.svg",
-    "/placeholder.svg",
-  ]);
-  const [isAddPhotoOpen, setIsAddPhotoOpen] = useState(false);
+  // File upload states
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const projectImageInputRef = useRef<HTMLInputElement>(null);
+  const galleryImageInputRef = useRef<HTMLInputElement>(null);
+  const certificationFileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  // Handlers for Testimonials
-  const handleAddTestimonial = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newTestimonial: Testimonial = {
-      id: Math.max(...testimonials.map((t) => t.id), 0) + 1,
-      ...testimonialForm,
-      date: new Date().toISOString().slice(0, 7),
-    };
-    setTestimonials([...testimonials, newTestimonial]);
-    setIsAddTestimonialOpen(false);
-    setTestimonialForm({
-      clientName: "",
-      projectName: "",
-      text: "",
-      rating: 5,
+  // Profile state
+  const [profileForm, setProfileForm] = useState({
+    full_name: "",
+    user_phone: "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    postal_code: "",
+    siret: "",
+    company_name: "",
+    website: "",
+    bio: "",
+    avatar_url: "",
+  });
+
+  // Fetch data
+  const { data: profileData, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["partner-profile"],
+    queryFn: () => api.partner.settings.getProfile(),
+  });
+
+  const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
+    queryKey: ["partner-portfolio-projects"],
+    queryFn: () => api.partner.settings.getPortfolioProjects(),
+  });
+
+  const { data: galleryData, isLoading: isLoadingGallery } = useQuery({
+    queryKey: ["partner-gallery"],
+    queryFn: () => api.partner.settings.getGallery(),
+  });
+
+  const { data: testimonialsData, isLoading: isLoadingTestimonials } = useQuery(
+    {
+      queryKey: ["partner-testimonials"],
+      queryFn: () => api.partner.settings.getTestimonials(),
+    }
+  );
+
+  const { data: certificationsData, isLoading: isLoadingCertifications } =
+    useQuery({
+      queryKey: ["partner-certifications"],
+      queryFn: () => api.partner.settings.getCertifications(),
     });
-    toast.success("Témoignage ajouté avec succès");
+
+  // Initialize profile form when data loads
+  useEffect(() => {
+    if (profileData?.profile) {
+      const p = profileData.profile;
+      setProfileForm({
+        full_name: p.user?.full_name || "",
+        user_phone: p.user?.phone || "",
+        name: p.partner?.name || "",
+        email: p.partner?.email || "",
+        phone: p.partner?.phone || "",
+        address: p.partner?.address || "",
+        city: p.partner?.city || "",
+        postal_code: p.partner?.postal_code || "",
+        siret: p.siret || "",
+        company_name: p.company_name || "",
+        website: p.website || "",
+        bio: p.bio || "",
+        avatar_url: p.user?.avatar_url || "",
+      });
+    }
+  }, [profileData]);
+
+  // Profile mutations
+  const updateProfileMutation = useMutation({
+    mutationFn: api.partner.settings.updateProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-profile"] });
+      toast.success("Profil enregistré avec succès");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la mise à jour du profil");
+    },
+  });
+
+  // Portfolio project mutations
+  const createProjectMutation = useMutation({
+    mutationFn: api.partner.settings.createPortfolioProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["partner-portfolio-projects"],
+      });
+      setIsAddProjectOpen(false);
+      setProjectForm({
+        name: "",
+        description: "",
+        location: "",
+        year: "",
+        category: "",
+        image_url: "",
+      });
+      toast.success("Projet ajouté au portfolio");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de l'ajout du projet");
+    },
+  });
+
+  const updateProjectMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      api.partner.settings.updatePortfolioProject(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["partner-portfolio-projects"],
+      });
+      setIsEditProjectOpen(false);
+      setEditingProject(null);
+      toast.success("Projet modifié avec succès");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la modification du projet");
+    },
+  });
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: api.partner.settings.deletePortfolioProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["partner-portfolio-projects"],
+      });
+      toast.success("Projet supprimé du portfolio");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la suppression du projet");
+    },
+  });
+
+  // Gallery mutations
+  const createGalleryItemMutation = useMutation({
+    mutationFn: api.partner.settings.createGalleryItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-gallery"] });
+      setIsAddPhotoOpen(false);
+      toast.success("Photo ajoutée à la galerie");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de l'ajout de la photo");
+    },
+  });
+
+  const deleteGalleryItemMutation = useMutation({
+    mutationFn: api.partner.settings.deleteGalleryItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-gallery"] });
+      toast.success("Photo supprimée");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la suppression de la photo");
+    },
+  });
+
+  // Testimonial mutations
+  const createTestimonialMutation = useMutation({
+    mutationFn: api.partner.settings.createTestimonial,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-testimonials"] });
+      setIsAddTestimonialOpen(false);
+      setTestimonialForm({
+        client_name: "",
+        project_name: "",
+        text: "",
+        rating: 5,
+      });
+      toast.success("Témoignage ajouté avec succès");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de l'ajout du témoignage");
+    },
+  });
+
+  const deleteTestimonialMutation = useMutation({
+    mutationFn: api.partner.settings.deleteTestimonial,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-testimonials"] });
+      toast.success("Témoignage supprimé");
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message || "Erreur lors de la suppression du témoignage"
+      );
+    },
+  });
+
+  // Certification mutations
+  const createCertificationMutation = useMutation({
+    mutationFn: api.partner.settings.createCertification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-certifications"] });
+      setIsAddCertificationOpen(false);
+      setCertificationForm({
+        name: "",
+        number: "",
+        issuing_organization: "",
+        issue_date: "",
+        expiry_date: "",
+        certificate_url: "",
+      });
+      toast.success("Certification ajoutée");
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message || "Erreur lors de l'ajout de la certification"
+      );
+    },
+  });
+
+  const deleteCertificationMutation = useMutation({
+    mutationFn: api.partner.settings.deleteCertification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-certifications"] });
+      toast.success("Certification supprimée");
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message || "Erreur lors de la suppression de la certification"
+      );
+    },
+  });
+
+  // File upload handlers
+  const uploadImage = async (
+    file: File,
+    folder: string = "portfolio"
+  ): Promise<string> => {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(7)}.${fileExt}`;
+      const filePath = `${folder}/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from("documents")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (error) throw error;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("documents").getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      throw new Error(error.message || "Erreur lors de l'upload");
+    }
   };
 
-  const handleDeleteTestimonial = (id: number) => {
-    setTestimonials(testimonials.filter((t) => t.id !== id));
-    toast.success("Témoignage supprimé");
+  const handleProjectImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const url = await uploadImage(file, "portfolio");
+      setProjectForm({ ...projectForm, image_url: url });
+      toast.success("Image téléchargée avec succès");
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de l'upload de l'image");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
-  // Handlers for Portfolio Projects
-  const handleAddProject = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newProject: PortfolioProject = {
-      id: Math.max(...portfolioProjects.map((p) => p.id), 0) + 1,
-      ...projectForm,
-      images: ["/placeholder.svg"],
-    };
-    setPortfolioProjects([...portfolioProjects, newProject]);
-    setIsAddProjectOpen(false);
-    setProjectForm({
-      title: "",
-      description: "",
-      location: "",
-      year: "",
-      category: "",
-    });
-    toast.success("Projet ajouté au portfolio");
+  const handleGalleryImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImage(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const url = await uploadImage(files[i], "gallery");
+        await createGalleryItemMutation.mutateAsync({
+          image_url: url,
+          title: files[i].name,
+        });
+      }
+      toast.success(`${files.length} photo(s) ajoutée(s) à la galerie`);
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de l'upload des photos");
+    } finally {
+      setUploadingImage(false);
+      if (galleryImageInputRef.current) {
+        galleryImageInputRef.current.value = "";
+      }
+    }
   };
 
-  const handleDeleteProject = (id: number) => {
-    setPortfolioProjects(portfolioProjects.filter((p) => p.id !== id));
-    toast.success("Projet supprimé du portfolio");
+  const handleCertificationFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const url = await uploadImage(file, "certifications");
+      setCertificationForm({ ...certificationForm, certificate_url: url });
+      toast.success("Document téléchargé avec succès");
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de l'upload du document");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
-  // Handlers for Certifications
-  const handleAddCertification = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newCert: Certification = {
-      id: Math.max(...certifications.map((c) => c.id), 0) + 1,
-      ...certificationForm,
-      status: "Valide",
-    };
-    setCertifications([...certifications, newCert]);
-    setIsAddCertificationOpen(false);
-    setCertificationForm({ name: "", number: "", year: "" });
-    toast.success("Certification ajoutée");
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const url = await uploadImage(file, "avatars");
+      setProfileForm({ ...profileForm, avatar_url: url });
+      await updateProfileMutation.mutateAsync({ avatar_url: url });
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de l'upload de l'avatar");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
-  const handleDeleteCertification = (id: number) => {
-    setCertifications(certifications.filter((c) => c.id !== id));
-    toast.success("Certification supprimée");
-  };
-
-  // Handlers for Photos
-  const handleAddPhoto = () => {
-    setPhotos([...photos, "/placeholder.svg"]);
-    setIsAddPhotoOpen(false);
-    toast.success("Photo ajoutée à la galerie");
-  };
-
-  const handleDeletePhoto = (index: number) => {
-    setPhotos(photos.filter((_, i) => i !== index));
-    toast.success("Photo supprimée");
-  };
-
+  // Form handlers
   const handleSaveProfile = () => {
-    toast.success("Profil enregistré avec succès");
+    updateProfileMutation.mutate(profileForm);
   };
 
   const handleSaveCompany = () => {
-    toast.success("Informations entreprise enregistrées");
+    updateProfileMutation.mutate({
+      name: profileForm.name,
+      email: profileForm.email,
+      phone: profileForm.phone,
+      address: profileForm.address,
+      city: profileForm.city,
+      postal_code: profileForm.postal_code,
+      siret: profileForm.siret,
+      company_name: profileForm.company_name,
+      website: profileForm.website,
+      bio: profileForm.bio,
+    });
   };
 
-  const handleUpdatePassword = () => {
-    toast.success("Mot de passe mis à jour");
+  const handleAddProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    createProjectMutation.mutate({
+      name: projectForm.name,
+      description: projectForm.description,
+      location: projectForm.location,
+      year: projectForm.year,
+      category: projectForm.category,
+      image_url: projectForm.image_url,
+    });
+  };
+
+  const handleEditProject = (project: PortfolioProject) => {
+    setEditingProject(project);
+    setProjectForm({
+      name: project.name,
+      description: project.description || "",
+      location: project.location || "",
+      year: project.year?.toString() || "",
+      category: project.category || "",
+      image_url: project.image_url || "",
+    });
+    setIsEditProjectOpen(true);
+  };
+
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProject) return;
+    updateProjectMutation.mutate({
+      id: editingProject.id,
+      data: {
+        name: projectForm.name,
+        description: projectForm.description,
+        location: projectForm.location,
+        year: projectForm.year,
+        category: projectForm.category,
+        image_url: projectForm.image_url,
+      },
+    });
+  };
+
+  const handleDeleteProject = (id: string) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
+      deleteProjectMutation.mutate(id);
+    }
+  };
+
+  const handleAddTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    createTestimonialMutation.mutate({
+      client_name: testimonialForm.client_name,
+      project_name: testimonialForm.project_name,
+      text: testimonialForm.text,
+      rating: testimonialForm.rating,
+    });
+  };
+
+  const handleDeleteTestimonial = (id: string) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce témoignage ?")) {
+      deleteTestimonialMutation.mutate(id);
+    }
+  };
+
+  const handleAddCertification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    createCertificationMutation.mutate({
+      name: certificationForm.name,
+      number: certificationForm.number,
+      issuing_organization: certificationForm.issuing_organization,
+      issue_date: certificationForm.issue_date || undefined,
+      expiry_date: certificationForm.expiry_date || undefined,
+      certificate_url: certificationForm.certificate_url,
+    });
+  };
+
+  const handleDeleteCertification = (id: string) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette certification ?")) {
+      deleteCertificationMutation.mutate(id);
+    }
+  };
+
+  const handleDeleteGalleryItem = (id: string) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette photo ?")) {
+      deleteGalleryItemMutation.mutate(id);
+    }
+  };
+
+  const profile = profileData?.profile;
+  const portfolioProjects = projectsData?.projects || [];
+  const galleryItems = galleryData?.gallery || [];
+  const testimonials = testimonialsData?.testimonials || [];
+  const certifications = certificationsData?.certifications || [];
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -312,50 +617,131 @@ export default function PartnerSettings() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label>Nom de l'entreprise</Label>
-                      <Input defaultValue="Cabinet Martin Architecture" />
+                  {isLoadingProfile ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
-                    <div className="space-y-2">
-                      <Label>SIRET</Label>
-                      <Input defaultValue="987 654 321 00012" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Adresse</Label>
-                      <Input defaultValue="45 Avenue des Architectes" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Ville</Label>
-                      <Input defaultValue="75008 Paris" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Téléphone</Label>
-                      <Input defaultValue="01 23 45 67 89" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Email professionnel</Label>
-                      <Input defaultValue="contact@cabinet-martin.fr" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Site web</Label>
-                      <Input defaultValue="www.cabinet-martin.fr" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Type d'activité</Label>
-                      <Input defaultValue="Architecture" disabled />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea
-                      defaultValue="Cabinet d'architecture spécialisé dans les constructions résidentielles modernes et écologiques. Plus de 15 ans d'expérience."
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex justify-end">
-                    <Button onClick={handleSaveCompany}>Enregistrer</Button>
-                  </div>
+                  ) : (
+                    <>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label>Nom de l'entreprise</Label>
+                          <Input
+                            value={profileForm.name}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                name: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>SIRET</Label>
+                          <Input
+                            value={profileForm.siret}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                siret: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Adresse</Label>
+                          <Input
+                            value={profileForm.address}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                address: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Ville</Label>
+                          <Input
+                            value={profileForm.city}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                city: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Téléphone</Label>
+                          <Input
+                            value={profileForm.phone}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                phone: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Email professionnel</Label>
+                          <Input
+                            value={profileForm.email}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                email: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Site web</Label>
+                          <Input
+                            value={profileForm.website}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                website: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Type d'activité</Label>
+                          <Input
+                            value={profile?.partner?.type || ""}
+                            disabled
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={profileForm.bio}
+                          onChange={(e) =>
+                            setProfileForm({
+                              ...profileForm,
+                              bio: e.target.value,
+                            })
+                          }
+                          rows={3}
+                        />
+                      </div>
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={handleSaveCompany}
+                          disabled={updateProfileMutation.isPending}
+                        >
+                          {updateProfileMutation.isPending && (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          )}
+                          Enregistrer
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -370,65 +756,108 @@ export default function PartnerSettings() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center gap-6">
-                    <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
-                      PM
+                  {isLoadingProfile ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline">Changer la photo</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Changer la photo de profil</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                            <Image className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
-                              Glissez-déposez ou cliquez pour sélectionner
-                            </p>
-                            <Input
-                              type="file"
-                              className="mt-4"
-                              accept="image/*"
-                            />
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-6">
+                        {profile?.user?.avatar_url ? (
+                          <img
+                            src={profile.user.avatar_url}
+                            alt="Avatar"
+                            className="h-24 w-24 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
+                            {getInitials(profileForm.full_name || "PM")}
                           </div>
-                          <DialogFooter>
-                            <Button>Télécharger</Button>
-                          </DialogFooter>
+                        )}
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" disabled={uploadingImage}>
+                              {uploadingImage ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Téléchargement...
+                                </>
+                              ) : (
+                                "Changer la photo"
+                              )}
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>
+                                Changer la photo de profil
+                              </DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                                <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">
+                                  Glissez-déposez ou cliquez pour sélectionner
+                                </p>
+                                <Input
+                                  ref={avatarInputRef}
+                                  type="file"
+                                  className="mt-4"
+                                  accept="image/*"
+                                  onChange={handleAvatarUpload}
+                                />
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label>Prénom et Nom</Label>
+                          <Input
+                            value={profileForm.full_name}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                full_name: e.target.value,
+                              })
+                            }
+                          />
                         </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label>Prénom</Label>
-                      <Input defaultValue="Pierre" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Nom</Label>
-                      <Input defaultValue="Martin" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input
-                        type="email"
-                        defaultValue="p.martin@cabinet-martin.fr"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Téléphone direct</Label>
-                      <Input defaultValue="06 12 34 56 78" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Fonction</Label>
-                      <Input defaultValue="Architecte principal / Gérant" />
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <Button onClick={handleSaveProfile}>Enregistrer</Button>
-                  </div>
+                        <div className="space-y-2">
+                          <Label>Email</Label>
+                          <Input
+                            type="email"
+                            value={profile?.user?.email || ""}
+                            disabled
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Téléphone direct</Label>
+                          <Input
+                            value={profileForm.user_phone}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                user_phone: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={handleSaveProfile}
+                          disabled={updateProfileMutation.isPending}
+                        >
+                          {updateProfileMutation.isPending && (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          )}
+                          Enregistrer
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -452,9 +881,7 @@ export default function PartnerSettings() {
                     </div>
                   </div>
                   <div className="flex justify-end">
-                    <Button onClick={handleUpdatePassword}>
-                      Mettre à jour
-                    </Button>
+                    <Button variant="outline">Mettre à jour</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -471,30 +898,36 @@ export default function PartnerSettings() {
                         Présentez vos réalisations aux clients
                       </CardDescription>
                     </div>
-                    <Dialog
+                    <Sheet
                       open={isAddProjectOpen}
                       onOpenChange={setIsAddProjectOpen}
                     >
-                      <DialogTrigger asChild>
+                      <SheetTrigger asChild>
                         <Button>
                           <Plus className="h-4 w-4 mr-2" />
                           Ajouter un projet
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Nouveau Projet Portfolio</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleAddProject} className="space-y-4">
+                      </SheetTrigger>
+                      <SheetContent className="min-w-[50vw] overflow-y-auto">
+                        <SheetHeader>
+                          <SheetTitle>Nouveau Projet Portfolio</SheetTitle>
+                          <SheetDescription>
+                            Ajoutez un nouveau projet à votre portfolio
+                          </SheetDescription>
+                        </SheetHeader>
+                        <form
+                          onSubmit={handleAddProject}
+                          className="space-y-4 mt-6"
+                        >
                           <div className="space-y-2">
                             <Label>Titre du projet *</Label>
                             <Input
                               placeholder="Ex: Villa Contemporaine"
-                              value={projectForm.title}
+                              value={projectForm.name}
                               onChange={(e) =>
                                 setProjectForm({
                                   ...projectForm,
-                                  title: e.target.value,
+                                  name: e.target.value,
                                 })
                               }
                               required
@@ -556,10 +989,23 @@ export default function PartnerSettings() {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>Photos du projet</Label>
-                            <Input type="file" multiple accept="image/*" />
+                            <Label>Image principale</Label>
+                            <Input
+                              ref={projectImageInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleProjectImageUpload}
+                              disabled={uploadingImage}
+                            />
+                            {projectForm.image_url && (
+                              <img
+                                src={projectForm.image_url}
+                                alt="Preview"
+                                className="mt-2 w-full h-48 object-cover rounded-lg"
+                              />
+                            )}
                           </div>
-                          <DialogFooter>
+                          <SheetFooter className="mt-6">
                             <Button
                               variant="outline"
                               type="button"
@@ -567,73 +1013,239 @@ export default function PartnerSettings() {
                             >
                               Annuler
                             </Button>
-                            <Button type="submit">Ajouter</Button>
-                          </DialogFooter>
+                            <Button
+                              type="submit"
+                              disabled={
+                                createProjectMutation.isPending ||
+                                uploadingImage
+                              }
+                            >
+                              {createProjectMutation.isPending && (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              )}
+                              Ajouter
+                            </Button>
+                          </SheetFooter>
                         </form>
-                      </DialogContent>
-                    </Dialog>
+                      </SheetContent>
+                    </Sheet>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {portfolioProjects.map((project) => (
-                      <Card key={project.id} className="overflow-hidden">
-                        <div className="aspect-video bg-muted relative">
-                          <img
-                            src={project.images[0]}
-                            alt={project.title}
-                            className="w-full h-full object-cover"
-                          />
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2"
-                            onClick={() => handleDeleteProject(project.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold">{project.title}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {project.description}
-                              </p>
-                            </div>
-                            <Badge variant="secondary">
-                              {project.category}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" /> {project.location}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" /> {project.year}
-                            </span>
-                          </div>
-                          <div className="flex gap-1 mt-2">
-                            {project.images.map((_, idx) => (
-                              <div
-                                key={idx}
-                                className="w-12 h-12 bg-muted rounded"
+                  {isLoadingProjects ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : portfolioProjects.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      Aucun projet dans votre portfolio
+                    </p>
+                  ) : (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {portfolioProjects.map((project) => (
+                        <Card key={project.id} className="overflow-hidden">
+                          <div className="aspect-video bg-muted relative">
+                            {project.image_url ? (
+                              <img
+                                src={project.image_url}
+                                alt={project.name}
+                                className="w-full h-full object-cover"
                               />
-                            ))}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-12"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                                <ImageIcon className="h-12 w-12" />
+                              </div>
+                            )}
+                            <div className="absolute top-2 right-2 flex gap-2">
+                              <Button
+                                variant="secondary"
+                                size="icon"
+                                onClick={() => handleEditProject(project)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => handleDeleteProject(project.id)}
+                                disabled={deleteProjectMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h4 className="font-semibold">
+                                  {project.name}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {project.description}
+                                </p>
+                              </div>
+                              {project.category && (
+                                <Badge variant="secondary">
+                                  {project.category}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                              {project.location && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />{" "}
+                                  {project.location}
+                                </span>
+                              )}
+                              {project.year && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />{" "}
+                                  {project.year}
+                                </span>
+                              )}
+                            </div>
+                            {project.gallery && project.gallery.length > 0 && (
+                              <div className="flex gap-1 mt-2">
+                                {project.gallery.slice(0, 3).map((item) => (
+                                  <img
+                                    key={item.id}
+                                    src={item.image_url}
+                                    alt={item.title || ""}
+                                    className="w-12 h-12 object-cover rounded"
+                                  />
+                                ))}
+                                {project.gallery.length > 3 && (
+                                  <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs">
+                                    +{project.gallery.length - 3}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+
+              {/* Edit Project Dialog */}
+              <Dialog
+                open={isEditProjectOpen}
+                onOpenChange={setIsEditProjectOpen}
+              >
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Modifier le projet</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleUpdateProject} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Titre du projet *</Label>
+                      <Input
+                        value={projectForm.name}
+                        onChange={(e) =>
+                          setProjectForm({
+                            ...projectForm,
+                            name: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        value={projectForm.description}
+                        onChange={(e) =>
+                          setProjectForm({
+                            ...projectForm,
+                            description: e.target.value,
+                          })
+                        }
+                        rows={3}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Localisation</Label>
+                        <Input
+                          value={projectForm.location}
+                          onChange={(e) =>
+                            setProjectForm({
+                              ...projectForm,
+                              location: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Année</Label>
+                        <Input
+                          value={projectForm.year}
+                          onChange={(e) =>
+                            setProjectForm({
+                              ...projectForm,
+                              year: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Catégorie</Label>
+                      <Input
+                        value={projectForm.category}
+                        onChange={(e) =>
+                          setProjectForm({
+                            ...projectForm,
+                            category: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Image principale</Label>
+                      <Input
+                        ref={projectImageInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProjectImageUpload}
+                        disabled={uploadingImage}
+                      />
+                      {projectForm.image_url && (
+                        <img
+                          src={projectForm.image_url}
+                          alt="Preview"
+                          className="mt-2 w-full h-48 object-cover rounded-lg"
+                        />
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => {
+                          setIsEditProjectOpen(false);
+                          setEditingProject(null);
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={
+                          updateProjectMutation.isPending || uploadingImage
+                        }
+                      >
+                        {updateProjectMutation.isPending && (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        )}
+                        Enregistrer
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
 
               {/* Photo Gallery */}
               <Card>
@@ -651,7 +1263,7 @@ export default function PartnerSettings() {
                     >
                       <DialogTrigger asChild>
                         <Button variant="outline">
-                          <Image className="h-4 w-4 mr-2" />
+                          <ImageIcon className="h-4 w-4 mr-2" />
                           Ajouter des photos
                         </Button>
                       </DialogTrigger>
@@ -661,15 +1273,18 @@ export default function PartnerSettings() {
                         </DialogHeader>
                         <div className="space-y-4">
                           <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                            <Image className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                            <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                             <p className="text-sm text-muted-foreground">
                               Glissez-déposez ou cliquez pour sélectionner
                             </p>
                             <Input
+                              ref={galleryImageInputRef}
                               type="file"
                               className="mt-4"
                               accept="image/*"
                               multiple
+                              onChange={handleGalleryImageUpload}
+                              disabled={uploadingImage}
                             />
                           </div>
                           <DialogFooter>
@@ -679,8 +1294,14 @@ export default function PartnerSettings() {
                             >
                               Annuler
                             </Button>
-                            <Button onClick={handleAddPhoto}>
-                              Télécharger
+                            <Button
+                              onClick={() => setIsAddPhotoOpen(false)}
+                              disabled={uploadingImage}
+                            >
+                              {uploadingImage && (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              )}
+                              Fermer
                             </Button>
                           </DialogFooter>
                         </div>
@@ -689,28 +1310,39 @@ export default function PartnerSettings() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {photos.map((photo, index) => (
-                      <div
-                        key={index}
-                        className="relative aspect-square bg-muted rounded-lg overflow-hidden group"
-                      >
-                        <img
-                          src={photo}
-                          alt={`Photo ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleDeletePhoto(index)}
+                  {isLoadingGallery ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : galleryItems.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      Aucune photo dans la galerie
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {galleryItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="relative aspect-square bg-muted rounded-lg overflow-hidden group"
                         >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                          <img
+                            src={item.image_url}
+                            alt={item.title || "Gallery item"}
+                            className="w-full h-full object-cover"
+                          />
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteGalleryItem(item.id)}
+                            disabled={deleteGalleryItemMutation.isPending}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -749,11 +1381,11 @@ export default function PartnerSettings() {
                               <Label>Nom du client *</Label>
                               <Input
                                 placeholder="Jean Dupont"
-                                value={testimonialForm.clientName}
+                                value={testimonialForm.client_name}
                                 onChange={(e) =>
                                   setTestimonialForm({
                                     ...testimonialForm,
-                                    clientName: e.target.value,
+                                    client_name: e.target.value,
                                   })
                                 }
                                 required
@@ -763,11 +1395,11 @@ export default function PartnerSettings() {
                               <Label>Projet *</Label>
                               <Input
                                 placeholder="Nom du projet"
-                                value={testimonialForm.projectName}
+                                value={testimonialForm.project_name}
                                 onChange={(e) =>
                                   setTestimonialForm({
                                     ...testimonialForm,
-                                    projectName: e.target.value,
+                                    project_name: e.target.value,
                                   })
                                 }
                                 required
@@ -824,7 +1456,15 @@ export default function PartnerSettings() {
                             >
                               Annuler
                             </Button>
-                            <Button type="submit">Ajouter</Button>
+                            <Button
+                              type="submit"
+                              disabled={createTestimonialMutation.isPending}
+                            >
+                              {createTestimonialMutation.isPending && (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              )}
+                              Ajouter
+                            </Button>
                           </DialogFooter>
                         </form>
                       </DialogContent>
@@ -832,52 +1472,69 @@ export default function PartnerSettings() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {testimonials.map((testimonial) => (
-                    <Card key={testimonial.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <p className="font-semibold">
-                                {testimonial.clientName}
-                              </p>
-                              <Badge variant="outline">
-                                {testimonial.projectName}
-                              </Badge>
-                              <div className="flex">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`h-4 w-4 ${
-                                      star <= testimonial.rating
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "text-muted-foreground"
-                                    }`}
-                                  />
-                                ))}
+                  {isLoadingTestimonials ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : testimonials.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      Aucun témoignage pour le moment
+                    </p>
+                  ) : (
+                    testimonials.map((testimonial) => (
+                      <Card key={testimonial.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <p className="font-semibold">
+                                  {testimonial.client_name}
+                                </p>
+                                <Badge variant="outline">
+                                  {testimonial.project_name}
+                                </Badge>
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= testimonial.rating
+                                          ? "fill-yellow-400 text-yellow-400"
+                                          : "text-muted-foreground"
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
                               </div>
+                              <p className="text-sm text-muted-foreground italic">
+                                "{testimonial.text}"
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                {new Date(testimonial.date).toLocaleDateString(
+                                  "fr-FR",
+                                  {
+                                    year: "numeric",
+                                    month: "long",
+                                  }
+                                )}
+                              </p>
                             </div>
-                            <p className="text-sm text-muted-foreground italic">
-                              "{testimonial.text}"
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              {testimonial.date}
-                            </p>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive"
+                              onClick={() =>
+                                handleDeleteTestimonial(testimonial.id)
+                              }
+                              disabled={deleteTestimonialMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive"
-                            onClick={() =>
-                              handleDeleteTestimonial(testimonial.id)
-                            }
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -940,14 +1597,42 @@ export default function PartnerSettings() {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label>Année d'obtention</Label>
+                              <Label>Organisme émetteur</Label>
                               <Input
-                                placeholder="2024"
-                                value={certificationForm.year}
+                                placeholder="Organisme"
+                                value={certificationForm.issuing_organization}
                                 onChange={(e) =>
                                   setCertificationForm({
                                     ...certificationForm,
-                                    year: e.target.value,
+                                    issuing_organization: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Date d'obtention</Label>
+                              <Input
+                                type="date"
+                                value={certificationForm.issue_date}
+                                onChange={(e) =>
+                                  setCertificationForm({
+                                    ...certificationForm,
+                                    issue_date: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Date d'expiration</Label>
+                              <Input
+                                type="date"
+                                value={certificationForm.expiry_date}
+                                onChange={(e) =>
+                                  setCertificationForm({
+                                    ...certificationForm,
+                                    expiry_date: e.target.value,
                                   })
                                 }
                               />
@@ -955,7 +1640,23 @@ export default function PartnerSettings() {
                           </div>
                           <div className="space-y-2">
                             <Label>Document justificatif</Label>
-                            <Input type="file" accept=".pdf,.jpg,.png" />
+                            <Input
+                              ref={certificationFileInputRef}
+                              type="file"
+                              accept=".pdf,.jpg,.png"
+                              onChange={handleCertificationFileUpload}
+                              disabled={uploadingImage}
+                            />
+                            {certificationForm.certificate_url && (
+                              <a
+                                href={certificationForm.certificate_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline"
+                              >
+                                Voir le document
+                              </a>
+                            )}
                           </div>
                           <DialogFooter>
                             <Button
@@ -965,7 +1666,18 @@ export default function PartnerSettings() {
                             >
                               Annuler
                             </Button>
-                            <Button type="submit">Ajouter</Button>
+                            <Button
+                              type="submit"
+                              disabled={
+                                createCertificationMutation.isPending ||
+                                uploadingImage
+                              }
+                            >
+                              {createCertificationMutation.isPending && (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              )}
+                              Ajouter
+                            </Button>
                           </DialogFooter>
                         </form>
                       </DialogContent>
@@ -973,33 +1685,63 @@ export default function PartnerSettings() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {certifications.map((cert) => (
-                    <div
-                      key={cert.id}
-                      className="flex items-center justify-between p-4 rounded-lg border"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Award className="h-6 w-6 text-primary" />
-                        <div>
-                          <p className="font-medium">{cert.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            N° {cert.number} - Depuis {cert.year}
-                          </p>
+                  {isLoadingCertifications ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : certifications.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      Aucune certification pour le moment
+                    </p>
+                  ) : (
+                    certifications.map((cert) => (
+                      <div
+                        key={cert.id}
+                        className="flex items-center justify-between p-4 rounded-lg border"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Award className="h-6 w-6 text-primary" />
+                          <div>
+                            <p className="font-medium">{cert.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {cert.number && `N° ${cert.number}`}
+                              {cert.number &&
+                                cert.issuing_organization &&
+                                " - "}
+                              {cert.issuing_organization}
+                              {cert.issue_date &&
+                                ` - Depuis ${new Date(
+                                  cert.issue_date
+                                ).getFullYear()}`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge>{cert.status}</Badge>
+                          {cert.certificate_url && (
+                            <Button variant="outline" size="sm" asChild>
+                              <a
+                                href={cert.certificate_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Voir
+                              </a>
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive"
+                            onClick={() => handleDeleteCertification(cert.id)}
+                            disabled={deleteCertificationMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge>{cert.status}</Badge>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive"
-                          onClick={() => handleDeleteCertification(cert.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

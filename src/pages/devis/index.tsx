@@ -1,9 +1,9 @@
-import Newsletter from '@/components/landing/Newsletter';
-import Footer from '@/components/landing/Footer';
-import Header from '@/components/landing/Header';
-import GoogleMapCard from '@/components/landing/GoogleMapCard';
-import DevisHero from '@/components/landing/DevisHero';
-import ConsultationFormServices from '@/components/landing/Consultationformservices';
+import Newsletter from "@/components/landing/layout/Newsletter";
+import Footer from "@/components/landing/layout/Footer";
+import Header from "@/components/landing/layout/Header";
+import GoogleMapCard from "@/components/landing/GoogleMapCard";
+import DevisHero from "@/components/landing/DevisHero";
+import ConsultationFormServices from "@/components/landing/Consultationformservices";
 
 export default function Devis() {
   return (

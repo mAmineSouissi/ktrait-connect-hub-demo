@@ -1,8 +1,8 @@
-import Newsletter from '@/components/landing/Newsletter';
-import Footer from '@/components/landing/Footer';
-import RealisationsHero from '@/components/landing/RealisationHero';
-import Realisations from '@/components/landing/Realisations';
-import Header from '@/components/landing/Header';
+import Newsletter from "@/components/landing/layout/Newsletter";
+import Footer from "@/components/landing/layout/Footer";
+import RealisationsHero from "@/components/landing/RealisationHero";
+import Realisations from "@/components/landing/Realisations";
+import Header from "@/components/landing/layout/Header";
 
 export default function RealisationsPage() {
   return (

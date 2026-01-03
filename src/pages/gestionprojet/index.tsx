@@ -1,8 +1,8 @@
-import Newsletter from '@/components/landing/Newsletter';
-import Footer from '@/components/landing/Footer';
-import Header from '@/components/landing/Header';
-import ProjectManagementHero from '@/components/landing/ProjectManagementHero';
-import ProjectManagementSection from '@/components/landing/ProjectManagementSection';
+import Newsletter from "@/components/landing/layout/Newsletter";
+import Footer from "@/components/landing/layout/Footer";
+import Header from "@/components/landing/layout/Header";
+import ProjectManagementHero from "@/components/landing/ProjectManagementHero";
+import ProjectManagementSection from "@/components/landing/ProjectManagementSection";
 
 export default function ProjectManagement() {
   return (

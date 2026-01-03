@@ -35,12 +35,9 @@ const folderNames = [
   "Rapports",
 ];
 
-export const PartnerDocumentUpdateForm: React.FC<PartnerDocumentUpdateFormProps> = ({
-  className,
-  updateDocument,
-  isUpdatePending = false,
-  document,
-}) => {
+export const PartnerDocumentUpdateForm: React.FC<
+  PartnerDocumentUpdateFormProps
+> = ({ className, updateDocument, isUpdatePending = false, document }) => {
   const [formData, setFormData] = useState<UpdatePartnerDocumentRequest>({
     name: document?.name || "",
     folder: document?.folder || "",
@@ -144,7 +141,14 @@ export const PartnerDocumentUpdateForm: React.FC<PartnerDocumentUpdateFormProps>
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     ];
 
-    const allowedExtensions = [".pdf", ".dwg", ".doc", ".docx", ".xls", ".xlsx"];
+    const allowedExtensions = [
+      ".pdf",
+      ".dwg",
+      ".doc",
+      ".docx",
+      ".xls",
+      ".xlsx",
+    ];
     const fileExt = "." + (file.name?.split(".").pop()?.toLowerCase() || "");
 
     if (
@@ -245,7 +249,10 @@ export const PartnerDocumentUpdateForm: React.FC<PartnerDocumentUpdateFormProps>
     }
   };
 
-  const handleChange = (field: keyof UpdatePartnerDocumentRequest, value: string) => {
+  const handleChange = (
+    field: keyof UpdatePartnerDocumentRequest,
+    value: string
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -395,7 +402,9 @@ export const PartnerDocumentUpdateForm: React.FC<PartnerDocumentUpdateFormProps>
           ) : selectedFile ? (
             <div className="space-y-2">
               <FileText className="h-8 w-8 mx-auto text-primary" />
-              <p className="text-sm font-medium">{selectedFile.name || "Fichier sélectionné"}</p>
+              <p className="text-sm font-medium">
+                {selectedFile.name || "Fichier sélectionné"}
+              </p>
               <p className="text-xs text-muted-foreground">
                 {formatFileSize(selectedFile?.size)}
               </p>
@@ -448,5 +457,3 @@ export const PartnerDocumentUpdateForm: React.FC<PartnerDocumentUpdateFormProps>
     </form>
   );
 };
-
-
