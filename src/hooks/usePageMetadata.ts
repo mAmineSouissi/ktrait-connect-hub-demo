@@ -11,13 +11,12 @@ export function usePageMetadata(
   override?: Partial<PageMetadata>
 ): PageMetadata {
   const router = useRouter();
-  // Use asPath to get the actual pathname (not the route pattern)
-  // Remove query string and hash if present
-  const pathname = router.asPath?.split("?")[0].split("#")[0] || router.pathname;
+
+  const pathname =
+    router.asPath?.split("?")[0].split("#")[0] || router.pathname;
   const metadata = useMemo(() => {
     const safePathname = pathname ?? "/";
 
-    // Extract route params from router.query
     const routeParams: Record<string, string> = {};
     if (router.query) {
       Object.entries(router.query).forEach(([key, value]) => {
@@ -29,10 +28,13 @@ export function usePageMetadata(
       });
     }
 
-    // Also try to extract ID from pathname segments as fallback
     const pathSegments = safePathname.split("/").filter(Boolean);
     const lastSegment = pathSegments[pathSegments.length - 1];
-    if (lastSegment && /^(\d+|[a-f0-9-]{8,})$/i.test(lastSegment) && !routeParams.id) {
+    if (
+      lastSegment &&
+      /^(\d+|[a-f0-9-]{8,})$/i.test(lastSegment) &&
+      !routeParams.id
+    ) {
       routeParams.id = lastSegment;
     }
 

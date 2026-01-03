@@ -272,7 +272,8 @@ export const pageMetadataConfig: RouteMetadataConfig[] = [
         { label: "Tâches", href: undefined },
       ],
       title: "Mes Tâches",
-      description: "Gérez vos tâches et suivez votre progression sur tous vos projets",
+      description:
+        "Gérez vos tâches et suivez votre progression sur tous vos projets",
     },
   },
   {
@@ -292,6 +293,17 @@ export const pageMetadataConfig: RouteMetadataConfig[] = [
       breadcrumbs: [{ label: "Dashboard", href: undefined }],
       title: "Dashboard",
       description: "Vue d'ensemble de vos projets",
+    },
+  },
+  {
+    pattern: /^\/partner\/settings$/,
+    metadata: {
+      breadcrumbs: [
+        { label: "Dashboard", href: "/partner" },
+        { label: "Paramètres", href: undefined },
+      ],
+      title: "Paramètres",
+      description: "Gérez vos paramètres et vos préférences",
     },
   },
 ];
@@ -384,6 +396,6 @@ export function getPageMetadata(
   return {
     breadcrumbs,
     title,
-    description: `Page ${title}`,
+    description: `Page du ${title}`,
   };
 }
